@@ -73,7 +73,7 @@ class diGraph(GraphInterface):
             if node_id1 in self.nodes.keys() and node_id2 in self.nodes.keys():
                 del self.edges[node_id1][node_id2]
                 return True
-            else: raise Exception("One Or Both Those ID's Are Not Exist")
+            else: raise Exception("One Or Both Those ID's Do Not Exist")
         except Exception as e:
             print(e)
             return False
