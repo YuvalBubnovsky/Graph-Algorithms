@@ -1,17 +1,19 @@
 import copy
+from graph import Location
 
 
 class Node:
-    def __init__(self, key=0, position=0, tag=0):
+    def __init__(self, key, position: Location):
         self.key = key
-        self.position = position
-        self.tag = tag
+        self.position = position.copyLoc(position)
+        # self.tag = tag
 
     @classmethod
     def copyNode(cls, node):
         cls.key = copy.deepcopy(node.key)
         cls.position = copy.deepcopy(node.position)
         cls.tag = copy.deepcopy(node.tag)
+
 
     def getKey(self):
         return self.key

@@ -1,12 +1,14 @@
 import copy
+from graph import Node
+
 
 class Edge:
 
-    def __init__(self, src, dest, weight, tag):
+    def __init__(self, src: int, dest: int, weight: float):
         self.src = src
         self.dest = dest
         self.weight = weight
-        self.tag = tag
+        # self.tag = tag
 
     @classmethod
     def copyEdge(cls, edge):
@@ -29,3 +31,4 @@ class Edge:
 
     def setTag(self, newTag):
         self.tag = newTag
+
