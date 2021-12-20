@@ -1,8 +1,15 @@
 from api.GraphInterface import GraphInterface
+import graph
 import copy
 
 
 class diGraph(GraphInterface):
+
+    Nodes = {}
+    Edges = {}
+    reversedEdges = {}
+    edgeCounter: int
+    modCount: int
 
     def v_size(self) -> int:
         pass
