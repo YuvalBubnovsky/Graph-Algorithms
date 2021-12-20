@@ -1,3 +1,4 @@
+import json
 from typing import List
 
 from api.GraphAlgoInterface import GraphAlgoInterface
@@ -11,7 +12,13 @@ class GraphAlgo(GraphAlgoInterface):
         pass
 
     def load_from_json(self, file_name: str) -> bool:
-        pass
+        """loading graph from JSON file"""
+        try:
+            with open(file_name, "r") as data:
+                pass
+        except FileExistsError as e:
+            print(e)
+        return True
 
     def save_to_json(self, file_name: str) -> bool:
         pass

@@ -4,11 +4,26 @@ import copy
 
 class diGraph(GraphInterface):
 
-    def v_size(self) -> int:
+    def __init__(self, nodes : dict, edges: dict):
+        """
+            constructor
+            :param nodes: nodes of graph
+            ":param edges: edges of graph
+        """
+        self.nodes = nodes
+        self.edges = edges
+        self.mc = 0
+
+    @classmethod
+    def init_graph(self):
         pass
+    # TODO is needed?
+
+    def v_size(self) -> int:
+        return len(self.nodes.keys())
 
     def e_size(self) -> int:
-        pass
+        return len(self.edges.keys())
 
     def get_all_v(self) -> dict:
         pass
@@ -20,7 +35,7 @@ class diGraph(GraphInterface):
         pass
 
     def get_mc(self) -> int:
-        pass
+        return self.mc
 
     def add_edge(self, id1: int, id2: int, weight: float) -> bool:
         pass
