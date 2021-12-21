@@ -1,5 +1,5 @@
 import copy
-from graph import Location
+from graph.Location import Location
 
 
 class Node:
@@ -21,8 +21,8 @@ class Node:
     def getPosition(self):
         return self.position
 
-    def setPosition(self, coordinates):
-        self.position = coordinates
+    def setPosition(self, coordinates: list):
+        self.position = Location(coordinates[0], coordinates[1], coordinates[2])
 
     def getTag(self):
         return self.tag
