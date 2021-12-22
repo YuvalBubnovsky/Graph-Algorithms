@@ -32,3 +32,6 @@ class Edge:
     def setTag(self, newTag):
         self.tag = newTag
 
+    def __str__(self):
+        return "source: {SOURCE}, destination: {DESTINATION}, weight: {WEIGHT}".format(SOURCE=self.src, DESTINATION=self.dest, WEIGHT= self.weight)
+

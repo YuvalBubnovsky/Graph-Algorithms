@@ -5,11 +5,11 @@ from graph.Node import Node
 
 
 class NodeTest(unittest.TestCase):
-    n1 = Node(1, Location(1, 3, 0))
-    n2 = Node(2, Location(2, 4, 0))
-    n3 = Node(3, Location(1, 5, 0))
-    n4 = Node(4, Location(3, 2, 0))
-    n5 = Node(5, Location(0, 3, 0))
+    n1 = Node(key=1, position=Location(1, 3, 0))
+    n2 = Node(key=2, position=Location(2, 4, 0))
+    n3 = Node(key=3, position=Location(1, 5, 0))
+    n4 = Node(key=4, position=Location(3, 2, 0))
+    n5 = Node(key=5, position=Location(0, 3, 0))
     node_list = [n1, n2, n3, n4, n5]
 
     def test_getKey(self):
@@ -20,11 +20,11 @@ class NodeTest(unittest.TestCase):
         self.assertEqual(self.n5.getKey(), 5)
 
     def test_getPosition(self):
-        self.assertEqual(self.n1.getPosition(), Location(1, 3, 0))
-        self.assertEqual(self.n2.getPosition(), Location(2, 4, 0))
-        self.assertEqual(self.n3.getPosition(), Location(1, 5, 0))
-        self.assertEqual(self.n4.getPosition(), Location(3, 2, 0))
-        self.assertEqual(self.n5.getPosition(), Location(0, 3, 0))
+        self.assertEqual(self.n1.getPosition().__str__(), Location(1, 3, 0).__str__())
+        self.assertEqual(self.n2.getPosition().__str__(), Location(2, 4, 0).__str__())
+        self.assertEqual(self.n3.getPosition().__str__(), Location(1, 5, 0).__str__())
+        self.assertEqual(self.n4.getPosition().__str__(), Location(3, 2, 0).__str__())
+        self.assertEqual(self.n5.getPosition().__str__(), Location(0, 3, 0).__str__())
 
     def test_setPosition(self):
         coordinates = [5, 6, 0]
@@ -33,11 +33,12 @@ class NodeTest(unittest.TestCase):
         self.n3.setPosition(coordinates)
         self.n4.setPosition(coordinates)
         self.n5.setPosition(coordinates)
-        self.assertEqual(self.n1.getPosition(), Location(coordinates[0], coordinates[1], coordinates[2]))
-        self.assertEqual(self.n2.getPosition(), Location(coordinates[0], coordinates[1], coordinates[2]))
-        self.assertEqual(self.n3.getPosition(), Location(coordinates[0], coordinates[1], coordinates[2]))
-        self.assertEqual(self.n4.getPosition(), Location(coordinates[0], coordinates[1], coordinates[2]))
-        self.assertEqual(self.n5.getPosition(), Location(coordinates[0], coordinates[1], coordinates[2]))
+        self.assertEqual(self.n1.getPosition().__str__(), Location(coordinates[0], coordinates[1], coordinates[2]).__str__())
+        self.assertEqual(self.n2.getPosition().__str__(), Location(coordinates[0], coordinates[1], coordinates[2]).__str__())
+        self.assertEqual(self.n3.getPosition().__str__(), Location(coordinates[0], coordinates[1], coordinates[2]).__str__())
+        self.assertEqual(self.n4.getPosition().__str__(), Location(coordinates[0], coordinates[1], coordinates[2]).__str__())
+        self.assertEqual(self.n5.getPosition().__str__(), Location(coordinates[0], coordinates[1], coordinates[2]).__str__())
+
 
 if __name__ == '__main__':
     runner = unittest.main
