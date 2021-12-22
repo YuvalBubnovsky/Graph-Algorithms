@@ -5,11 +5,11 @@ from graph.Node import Node
 
 
 class NodeTest(unittest.TestCase):
-    n1 = Node(key=1, position=Location(1, 3, 0))
-    n2 = Node(key=2, position=Location(2, 4, 0))
-    n3 = Node(key=3, position=Location(1, 5, 0))
-    n4 = Node(key=4, position=Location(3, 2, 0))
-    n5 = Node(key=5, position=Location(0, 3, 0))
+    n1 = Node(key=1, position=(1, 3, 0))
+    n2 = Node(key=2, position=(2, 4, 0))
+    n3 = Node(key=3, position=(1, 5, 0))
+    n4 = Node(key=4, position=(3, 2, 0))
+    n5 = Node(key=5, position=(0, 3, 0))
     node_list = [n1, n2, n3, n4, n5]
 
     def test_getKey(self):

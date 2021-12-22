@@ -3,11 +3,12 @@ from graph.Location import Location
 
 
 class Node:
-    def __init__(self, key, position: Location):
+    def __init__(self, key, position: tuple):
         self.key = key
         # self.position = position.copyLoc(position)
         # self.tag = tag
-        self.position = Location(position.get_x(), position.get_y(), position.get_z())
+        pos_location = Location(position[0], position[1], position[2])
+        self.position = Location(pos_location.get_x(), pos_location.get_y(), pos_location.get_z())
 
     @classmethod
     def copyNode(cls, node):

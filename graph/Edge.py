@@ -8,14 +8,12 @@ class Edge:
         self.src = src
         self.dest = dest
         self.weight = weight
-        # self.tag = tag
 
     @classmethod
     def copyEdge(cls, edge):
         cls.src = copy.deepcopy(edge.src)
         cls.dest = copy.deepcopy(edge.dest)
         cls.weight = copy.deepcopy(edge.weight)
-        cls.tag = copy.deepcopy(edge.tag)
 
     def getSrc(self):
         return self.src
@@ -26,12 +24,7 @@ class Edge:
     def getWeight(self):
         return self.weight
 
-    def getTag(self):
-        return self.tag
-
-    def setTag(self, newTag):
-        self.tag = newTag
-
     def __str__(self):
-        return "source: {SOURCE}, destination: {DESTINATION}, weight: {WEIGHT}".format(SOURCE=self.src, DESTINATION=self.dest, WEIGHT= self.weight)
-
+        return "source: {SOURCE}, destination: {DESTINATION}, weight: {WEIGHT}".format(SOURCE=self.src,
+                                                                                       DESTINATION=self.dest,
+                                                                                       WEIGHT=self.weight)
