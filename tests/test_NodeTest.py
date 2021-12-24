@@ -41,6 +41,6 @@ class NodeTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    runner = unittest.main
+    runner = unittest.main()
     runner.runTests()
 

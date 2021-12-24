@@ -11,9 +11,17 @@ class MyTestCase(unittest.TestCase):
 
     graph = DiGraph()
 
-    for i in range(4):
-        graph.add_node(node_id=i)
-    graph.add_node(node_id=4, pos=(1, 3, 0))
+    n1 = Node(key=0, position=(1, 3, 0))
+    n2 = Node(key=1, position=(2, 4, 0))
+    n3 = Node(key=2, position=(1, 5, 0))
+    n4 = Node(key=3, position=(3, 2, 0))
+    n5 = Node(key=4, position=(0, 3, 0))
+
+    graph.add_node(n1.getKey(), (n1.getPosition().get_x(), n1.getPosition().get_y(), n1.getPosition().get_z()))
+    graph.add_node(n2.getKey(), (n2.getPosition().get_x(), n2.getPosition().get_y(), n2.getPosition().get_z()))
+    graph.add_node(n3.getKey(), (n3.getPosition().get_x(), n3.getPosition().get_y(), n3.getPosition().get_z()))
+    graph.add_node(n4.getKey(), (n4.getPosition().get_x(), n4.getPosition().get_y(), n4.getPosition().get_z()))
+    graph.add_node(n5.getKey(), (n5.getPosition().get_x(), n5.getPosition().get_y(), n5.getPosition().get_z()))
 
     e1 = Edge(src=0, dest=1, weight=0.265)
     graph.add_edge(id1=e1.src, id2=e1.dest, weight=e1.weight)
@@ -32,10 +40,10 @@ class MyTestCase(unittest.TestCase):
     # for edge in edge_list:
     #     graph.add_edge(id1=edge.src, id2=edge.dest, weight=edge.weight)
 
-    def test_v_size(self):
+    def test_a_v_size(self):
         self.assertEqual(self.graph.v_size(), 5)
 
-    def test_e_size(self):
+    def test_a_e_size(self):
         self.assertEqual(self.graph.e_size(), 6)
 
     def test_get_all_v(self):
@@ -82,8 +90,10 @@ class MyTestCase(unittest.TestCase):
         should_be_4 = self.graph.all_out_edges_of_node(4)
         self.assertEqual(should_be_4, all_out_4)
 
-    def test_remove_node(self):
+    def test_remove_a_node(self):
         self.graph.remove_node(0)
+        self.assertFalse(self.graph.nodes.get(0))
+        self.assertFalse(self.graph.edges.get(0))
         self.assertEqual(self.graph.node_counter, 4)
         nodes_after_remove = {1: self.graph.nodes.get(1), 2: self.graph.nodes.get(2), 3: self.graph.nodes.get(3),
                               4: self.graph.nodes.get(4)}
@@ -92,7 +102,10 @@ class MyTestCase(unittest.TestCase):
 
     def test_remove_edge(self):
         self.graph.remove_edge(node_id1=2, node_id2=1)
-        self.assertEqual(self.graph.edge_counter, 5)
+        self.assertFalse(self.graph.all_out_edges_of_node(2).get(1))
+        self.assertTrue(self.graph.all_out_edges_of_node(2).get(3))
+        self.assertEqual(self.graph.edge_counter, 3)
+
 
 if __name__ == '__main__':
     runner = unittest.main()

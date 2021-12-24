@@ -28,7 +28,5 @@ class MyTestCase(unittest.TestCase):
     graphAlgo = GraphAlgo()
 
 
-
 if __name__ == '__main__':
-    runner = unittest.main
-    runner.runTests()
+    unittest.main()
