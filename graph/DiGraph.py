@@ -8,7 +8,7 @@ import copy
 from graph.Location import Location
 
 
-class diGraph(GraphInterface):
+class DiGraph(GraphInterface):
 
     def __init__(self):
         """

@@ -1,6 +1,6 @@
 import unittest
 
-from graph.DiGraph import diGraph
+from graph.DiGraph import DiGraph
 from graph.Edge import Edge
 from graph.Node import Node
 
@@ -9,7 +9,7 @@ class MyTestCase(unittest.TestCase):
     """add_node and add_edge are being tested when initializing the graph- if other
         methods work well, it means that those methods work as well"""
 
-    graph = diGraph()
+    graph = DiGraph()
 
     for i in range(4):
         graph.add_node(node_id=i)
