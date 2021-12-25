@@ -1,11 +1,8 @@
 import collections
 import random
 
-from api.GraphInterface import GraphInterface
-from graph import Node, Edge
-import copy
-
-from graph.Location import Location
+from graph.Node import Node
+from graph.GraphInterface import GraphInterface
 
 
 class DiGraph(GraphInterface):
@@ -43,6 +40,12 @@ class DiGraph(GraphInterface):
     def get_all_e(self) -> dict:
         return self.edges
 
+    def get_node(self, n: int) -> Node:
+        if self.nodes.get(n):
+            return self.nodes.get(n)
+        else:
+            print("No such node in graph")
+
     def all_in_edges_of_node(self, id1: int) -> dict:
         id_in_edges = {}
         for edge_src in self.edges.keys():
@@ -74,9 +77,9 @@ class DiGraph(GraphInterface):
             loc_x = random.randrange(0, 10)
             loc_y = random.randrange(0, 10)
             pos_loc = (loc_x, loc_y, 0)
-            new_node = Node.Node(key=node_id, position=pos_loc)
+            new_node = Node(key=node_id, position=pos_loc)
         else:
-            new_node = Node.Node(key=node_id, position=pos)
+            new_node = Node(key=node_id, position=pos)
         if new_node.key not in self.nodes.keys():
             self.nodes[new_node.key] = new_node
             self.mc += 1
@@ -121,6 +124,10 @@ class DiGraph(GraphInterface):
         else:
             print("One Or Both Those ID's Do Not Exist")
             return False
+
+    def reset_tags(self):
+        for node in self.nodes:
+            node.setTag(0)
 
     # TODO move this method to be help method of algorithms methods
     # def reverse_edges(self, edges: dict):

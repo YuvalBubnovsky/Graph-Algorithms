@@ -31,5 +31,14 @@ class Node:
     def setTag(self, newTag):
         self.tag = newTag
 
+    def get_x(self) -> float:
+        return self.position.get_x()
+
+    def get_y(self) -> float:
+        return self.position.get_y()
+
+    def get_z(self) -> float:
+        return self.position.get_z()
+
     def __str__(self):
         return "key: {KEY}, position: {POSITION}".format(KEY=self.key, POSITION=self.position)
