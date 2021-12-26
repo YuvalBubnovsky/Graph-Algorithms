@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import pygame
 
 
-
 class GraphAlgo(GraphAlgoInterface):
 
     def __init__(self):
@@ -131,7 +130,7 @@ class GraphAlgo(GraphAlgoInterface):
             else:
                 flag = False
 
-        def is_connected(self) -> bool:
+    def is_connected(self) -> bool:
         self.graph.reset_tags()
         it = iter(self.graph.nodes)
         v = next(it)
@@ -144,19 +143,18 @@ class GraphAlgo(GraphAlgoInterface):
         self.DFS(v, False)
         for node2 in it2:
             if self.graph.get_node(node2).getTag() == 0:
-                return False
+                 return False
 
-        return True
-
+            return True
 
     # TODO: add dijkstra as a separate file/function
     def dijkstra(self, start_node, parents):
-        weights = {node : float('inf') for node in range(len(self.graph.nodes))}
+        weights = {node: float('inf') for node in range(len(self.graph.nodes))}
         weights[start_node] = 0
         visited = []
 
         pq = PriorityQueue()
-        pq.put((0,start_node))
+        pq.put((0, start_node))
 
         while not pq.empty():
             (weight, current) = pq.get()
@@ -165,15 +163,15 @@ class GraphAlgo(GraphAlgoInterface):
                 if self.graph.edges[current.getKey].get(neighbor) != -1:
                     distance = self.graph.edges[current.getKey].get(neighbor)
                     if neighbor not in visited:
-                     current_weight = weights[neighbor]
-                     new_weight = weights[current] + distance
-                     if new_weight < current_weight:
-                         pq.put((new_weight, neighbor))
-                         weights[neighbor] = new_weight
-                         parents.append(neighbor)
+                        current_weight = weights[neighbor]
+                        new_weight = weights[current] + distance
+                        if new_weight < current_weight:
+                            pq.put((new_weight, neighbor))
+                            weights[neighbor] = new_weight
+                            parents.append(neighbor)
         return weights, parents
 
-    def shortest_path_nodes(self ,src, dest, parents):
+    def shortest_path_nodes(self, src, dest, parents):
         path_list = []
         pointer = dest
 
@@ -183,9 +181,8 @@ class GraphAlgo(GraphAlgoInterface):
         if pointer == src:
             path_list.insert(0, src)
         if path_list.pop(0) != src:
-            return  None
+            return None
         else:
             return path_list
-
 
     # TODO: add dijkstra as a seperate file/function
