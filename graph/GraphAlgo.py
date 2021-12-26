@@ -3,6 +3,7 @@ from asyncio import PriorityQueue
 from typing import List
 from collections import defaultdict
 from collections import deque
+import sys
 
 from graph.DiGraph import DiGraph
 from graph.GraphInterface import GraphInterface
@@ -104,10 +105,31 @@ class GraphAlgo(GraphAlgoInterface):
 
     def centerPoint(self) -> (int, float):
         if self.is_connected():
-            pass
+            infinite = float("inf")
+            min_distance = sys.float_info.max
+            node_id = -1
+            for vertex in self.get_graph().get_all_v():
+                curr_node = vertex
+                max_distance = sys.float_info.min
+                for node in self.get_graph().get_all_v():
+                    if node == vertex:
+                        continue
+                    next_node = node
+                    dijkstra = self.shortest_path(curr_node, next_node)
+                    tmp = dijkstra[0]
+                    if dijkstra[0] is not infinite:
+                        if tmp > max_distance:
+                            max_distance = tmp
+                        if tmp > min_distance:
+                            break
+
+                if min_distance > max_distance:
+                    min_distance = max_distance
+                    node_id = vertex
+
+            return node_id, min_distance
         else:
             return None, float('inf')
-        pass
 
     def DFS(self, v: int, b: bool):
         stack = deque()
@@ -143,11 +165,10 @@ class GraphAlgo(GraphAlgoInterface):
         self.DFS(v, False)
         for node2 in it2:
             if self.graph.get_node(node2).getTag() == 0:
-                 return False
+                return False
 
             return True
 
-    # TODO: add dijkstra as a separate file/function
     def dijkstra(self, start_node, parents):
         weights = {node: float('inf') for node in range(len(self.graph.nodes))}
         weights[start_node] = 0
