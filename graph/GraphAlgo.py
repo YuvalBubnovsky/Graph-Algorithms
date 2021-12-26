@@ -148,7 +148,36 @@ class GraphAlgo(GraphAlgoInterface):
         pass
 
     def TSP(self, node_lst: List[int]) -> (List[int], float):
-        pass
+        if node_lst is None or len(node_lst) == 0:
+            return None
+
+        nextcity = node_lst[0]  # the closest next city, starting with the first city in the list
+        path = []  # the total path
+        overAllLength = 0  # the length of the total path (weight)
+        while len(node_lst) - 1 > 0:
+            node_lst.remove(nextcity)  # removing the first city in the current list
+            minlength = math.inf
+            currpath = []  # temp path
+            for city in range(len(node_lst)):
+                temp = self.shortest_path(nextcity, node_lst[
+                    city])  # temp is a tuple that contains the length and list of the path
+                if temp[0] == math.inf:
+                    break
+                if temp[0] < minlength:
+                    minlength = temp[0]
+                    currpath = temp[1]
+                    currcity = node_lst[city]
+
+            if len(path) == 0:
+                path.extend(currpath)  # adding the path to the end of the list
+            else:
+                currpath.pop(0)
+                path.extend(currpath)  # adding the path to the end of the list without the first one in order to avoid duplicates
+
+            overAllLength = overAllLength + minlength  # adding the length of current path to the total path length
+            nextcity = currcity
+
+        return path, overAllLength
 
     def centerPoint(self) -> (int, float):
         if self.is_connected():

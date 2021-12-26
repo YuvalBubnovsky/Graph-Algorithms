@@ -1,3 +1,4 @@
+import copy
 import unittest
 from collections import defaultdict
 
@@ -41,6 +42,14 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(self.graphAlgo.load_from_json(r"C:\Users\yuval\PycharmProjects\OOP_2021_Ex3\data\A5.json"))
         self.assertEqual((40, 9.291743173960954), self.graphAlgo.centerPoint())
         self.assertTrue(self.graphAlgo.is_connected())
+
+    def test_tsp(self):
+        self.graphAlgo.load_from_json(r"C:\Users\yuval\PycharmProjects\OOP_2021_Ex3\data\A1.json")
+        cities = [3, 2, 14, 5, 11, 10, 4]
+        check = copy.deepcopy(cities)
+        tsp = self.graphAlgo.TSP(cities)[0]
+        shouldbe = [3, 4, 5, 6, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+        self.assertListEqual(shouldbe, tsp)
 
 
 if __name__ == '__main__':
