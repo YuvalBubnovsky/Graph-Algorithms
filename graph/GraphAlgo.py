@@ -1,4 +1,5 @@
 import json
+from asyncio import PriorityQueue
 from typing import List
 from collections import defaultdict
 from collections import deque
@@ -7,14 +8,19 @@ from graph.DiGraph import DiGraph
 from graph.GraphInterface import GraphInterface
 from graph.GraphAlgoInterface import GraphAlgoInterface
 
+import matplotlib.pyplot as plt
+import pygame
+
+
 
 class GraphAlgo(GraphAlgoInterface):
 
     def __init__(self):
         self.graph = DiGraph()
 
-    def init_graph(self, graph: DiGraph):
-        self.graph = graph
+    @classmethod
+    def init_graph(cls, graph: DiGraph):
+        DiGraph.init_graph(graph.nodes, graph.edges)
 
     def get_graph(self) -> GraphInterface:
         return self.graph
@@ -82,7 +88,14 @@ class GraphAlgo(GraphAlgoInterface):
             return False
 
     def shortest_path(self, id1: int, id2: int) -> (float, list):
-        pass
+        parents = []
+        if id1 == id2:
+            weight = self.graph.edges.get(id1).get(id2)
+            return weight, [id1, id2]
+        else:
+            weights = self.dijkstra(id1, parents)
+            path = self.shortest_path_nodes(id1, id2, parents)
+            return weights[id2], path
 
     def plot_graph(self) -> None:
         pass
@@ -107,6 +120,7 @@ class GraphAlgo(GraphAlgoInterface):
                 if self.graph.get_node(v.getKey()).getTag() == 1:
                     continue
                 self.graph.get_node(v.getKey()).setTag(1)
+
                 if b:
                     u = self.graph.all_out_edges_of_node(v.getKey())
                 else:
@@ -117,7 +131,7 @@ class GraphAlgo(GraphAlgoInterface):
             else:
                 flag = False
 
-    def is_connected(self) -> bool:
+        def is_connected(self) -> bool:
         self.graph.reset_tags()
         it = iter(self.graph.nodes)
         v = next(it)
@@ -133,5 +147,45 @@ class GraphAlgo(GraphAlgoInterface):
                 return False
 
         return True
+
+
+    # TODO: add dijkstra as a separate file/function
+    def dijkstra(self, start_node, parents):
+        weights = {node : float('inf') for node in range(len(self.graph.nodes))}
+        weights[start_node] = 0
+        visited = []
+
+        pq = PriorityQueue()
+        pq.put((0,start_node))
+
+        while not pq.empty():
+            (weight, current) = pq.get()
+            visited.append(current.getKey)
+            for neighbor in range(len(self.graph.nodes)):
+                if self.graph.edges[current.getKey].get(neighbor) != -1:
+                    distance = self.graph.edges[current.getKey].get(neighbor)
+                    if neighbor not in visited:
+                     current_weight = weights[neighbor]
+                     new_weight = weights[current] + distance
+                     if new_weight < current_weight:
+                         pq.put((new_weight, neighbor))
+                         weights[neighbor] = new_weight
+                         parents.append(neighbor)
+        return weights, parents
+
+    def shortest_path_nodes(self ,src, dest, parents):
+        path_list = []
+        pointer = dest
+
+        while parents[pointer] != -1:
+            path_list.insert(0, self.graph.get_node(pointer))
+            pointer = parents[pointer]
+        if pointer == src:
+            path_list.insert(0, src)
+        if path_list.pop(0) != src:
+            return  None
+        else:
+            return path_list
+
 
     # TODO: add dijkstra as a seperate file/function
