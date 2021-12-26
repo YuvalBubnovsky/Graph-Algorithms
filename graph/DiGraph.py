@@ -151,16 +151,3 @@ class DiGraph(GraphInterface):
     def reset_tags(self):
         for node in self.nodes:
             self.nodes.get(node).setTag(0)
-
-    # TODO move this method to be help method of algorithms methods
-    # def reverse_edges(self, edges: dict):
-    #     reversed_edges = {}
-    #     for edge_src in edges.keys():
-    #         # edge_copy = copy.copy(edge)
-    #         # temp = edge_copy.src
-    #         # edge_copy.src = edge_copy.dest
-    #         # edge_copy.dest = temp
-    #         for edge_dest in edges.get(edge_src):
-    #             reversed_edge = {edge_src: self.edges[edge_src][edge_dest]}
-    #             reversed_edges.update({edge_dest: reversed_edge})
-    #     return reversed_edges

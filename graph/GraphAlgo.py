@@ -1,5 +1,6 @@
+import heapq
 import json
-from asyncio import PriorityQueue
+import math
 from typing import List
 from collections import defaultdict
 from collections import deque
@@ -88,14 +89,60 @@ class GraphAlgo(GraphAlgoInterface):
             return False
 
     def shortest_path(self, id1: int, id2: int) -> (float, list):
-        parents = []
-        if id1 == id2:
-            weight = self.graph.edges.get(id1).get(id2)
-            return weight, [id1, id2]
-        else:
-            weights = self.dijkstra(id1, parents)
-            path = self.shortest_path_nodes(id1, id2, parents)
-            return weights[id2], path
+        dijkstra = self.dijkstra(id1)
+        dist = dijkstra[0]
+        pointers = dijkstra[1]
+        temp = id2
+        ans = []
+        node_id2 = self.graph.nodes.get(id2)
+
+        if node_id2.weight == (float(math.inf)):
+            return float(math.inf), []
+
+        while temp != id1:  # inserting the nodes in the correct order
+            ans.insert(0, temp)
+            temp = pointers.get(temp)
+
+        ans.insert(0, id1)  # adding the first node to the list
+        return dist.get(id2), ans
+
+    def dijkstra(self, src):
+        self.reset()  # resetting the values of the node's tag and weight before applying a new Dijkstra
+        dist = {}  # a dictionary of distance from src to the nodeid in the dictionary
+        prev = {}
+        visited = {}
+        neighbours = [(0, src)]
+        dist[src] = 0  # distance from node to itself = 0
+        prev[src] = None  # there is no pointer to the node
+        visited[src] = True
+        self.get_graph().get_all_v().get(src).weight = 0
+        while not len(neighbours) == 0:
+            temp = heapq.heappop(neighbours)  # temp value - int
+            for nodeid in self.graph.all_out_edges_of_node(temp[1]).keys():
+                if self.relax(temp[1], nodeid):
+                    dist[nodeid] = self.get_graph().get_all_v().get(
+                        nodeid).weight  # if we could update - updating the weight of the node int the dict
+                    prev[nodeid] = temp[1]  # temp pointing to nodeid
+                if nodeid not in visited.keys():
+                    visited[nodeid] = True  # marked as visited
+                    heapq.heappush(neighbours,
+                                   (self.get_graph().get_all_v().get(nodeid).weight, nodeid))  # adding it to the queue
+
+        return dist, prev
+
+    def relax(self, src: int, dest: int) -> bool:
+        srcweight = self.get_graph().get_all_v().get(src).weight
+        edgeweight = self.get_graph().all_out_edges_of_node(src).get(dest)
+
+        if self.get_graph().get_all_v().get(dest).weight <= srcweight + edgeweight:
+            return False
+
+        self.get_graph().get_all_v().get(dest).weight = srcweight + edgeweight
+        return True
+
+    def reset(self):
+        for node in self.get_graph().get_all_v().values():
+            node.weight = math.inf
 
     def plot_graph(self) -> None:
         pass
@@ -168,42 +215,3 @@ class GraphAlgo(GraphAlgoInterface):
                 return False
 
             return True
-
-    def dijkstra(self, start_node, parents):
-        weights = {node: float('inf') for node in range(len(self.graph.nodes))}
-        weights[start_node] = 0
-        visited = []
-
-        pq = PriorityQueue()
-        pq.put((0, start_node))
-
-        while not pq.empty():
-            (weight, current) = pq.get()
-            visited.append(current.getKey)
-            for neighbor in range(len(self.graph.nodes)):
-                if self.graph.edges[current.getKey].get(neighbor) != -1:
-                    distance = self.graph.edges[current.getKey].get(neighbor)
-                    if neighbor not in visited:
-                        current_weight = weights[neighbor]
-                        new_weight = weights[current] + distance
-                        if new_weight < current_weight:
-                            pq.put((new_weight, neighbor))
-                            weights[neighbor] = new_weight
-                            parents.append(neighbor)
-        return weights, parents
-
-    def shortest_path_nodes(self, src, dest, parents):
-        path_list = []
-        pointer = dest
-
-        while parents[pointer] != -1:
-            path_list.insert(0, self.graph.get_node(pointer))
-            pointer = parents[pointer]
-        if pointer == src:
-            path_list.insert(0, src)
-        if path_list.pop(0) != src:
-            return None
-        else:
-            return path_list
-
-    # TODO: add dijkstra as a seperate file/function
