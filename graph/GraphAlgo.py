@@ -13,6 +13,9 @@ class GraphAlgo(GraphAlgoInterface):
     def __init__(self):
         self.graph = DiGraph()
 
+    def init_graph(self, graph: DiGraph):
+        self.graph = graph
+
     def get_graph(self) -> GraphInterface:
         return self.graph
 
@@ -93,13 +96,12 @@ class GraphAlgo(GraphAlgoInterface):
             return None, float('inf')
         pass
 
-    # TODO : add this test
     def transpose(self) -> dict:
         graph_inv = defaultdict(list)
 
-        for src, dest in self.graph.edges:
-            for target in dest:
-                graph_inv[target].append(src)
+        for src in self.graph.get_all_e():
+            for dest in self.graph.edges.get(src).keys():
+                graph_inv[dest].append({src: self.graph.edges.get(src).get(dest)})
 
         return graph_inv
 
@@ -110,11 +112,11 @@ class GraphAlgo(GraphAlgoInterface):
         while flag:
             if stack:
                 v = stack.pop()
-                if self.graph.get_node(v).getTag() == 1:
+                if self.graph.get_node(v.getKey()).getTag() == 1:
                     continue
-                self.graph.get_node(v).setTag(1)
+                self.graph.get_node(v.getKey()).setTag(1)
                 for edge in self.graph.edges:
-                    if self.graph.get_node(edge.getDest()).getTag() == 0:
+                    if self.graph.get_node(self.graph.get_node(edge).getTag()) == 0:
                         stack.append(self.graph.get_node(edge.getDest()))
             else:
                 flag = False
@@ -125,7 +127,7 @@ class GraphAlgo(GraphAlgoInterface):
         v = next(it)
         self.DFS(v)
         for node in it:
-            if node.getTag == 0:
+            if self.graph.get_node(node).getTag() == 0:
                 return False
 
         self.graph.reset_tags()
@@ -144,3 +146,4 @@ class GraphAlgo(GraphAlgoInterface):
         return True
 
     # TODO: add dijkstra as a seperate file/function
+

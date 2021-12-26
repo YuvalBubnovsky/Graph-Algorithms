@@ -77,9 +77,9 @@ class DiGraph(GraphInterface):
             loc_x = random.randrange(0, 10)
             loc_y = random.randrange(0, 10)
             pos_loc = (loc_x, loc_y, 0)
-            new_node = Node(key=node_id, position=pos_loc)
+            new_node = Node(key=node_id, position=pos_loc, tag = 0)
         else:
-            new_node = Node(key=node_id, position=pos)
+            new_node = Node(key=node_id, position=pos, tag = 0)
         if new_node.key not in self.nodes.keys():
             self.nodes[new_node.key] = new_node
             self.mc += 1
@@ -127,7 +127,10 @@ class DiGraph(GraphInterface):
 
     def reset_tags(self):
         for node in self.nodes:
-            node.setTag(0)
+            self.nodes.get(node).setTag(0)
+
+
+
 
     # TODO move this method to be help method of algorithms methods
     # def reverse_edges(self, edges: dict):
