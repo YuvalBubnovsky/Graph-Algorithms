@@ -45,6 +45,7 @@ class GraphAlgo(GraphAlgoInterface):
                         weight = edge.get("w")
                         dest = edge.get("dest")
                         graph.add_edge(src, dest, weight)
+                        graph.add_rev_edge(dest, src, weight)
                     self.graph = graph
                 return True
         except FileExistsError as e:
@@ -96,16 +97,7 @@ class GraphAlgo(GraphAlgoInterface):
             return None, float('inf')
         pass
 
-    def transpose(self) -> dict:
-        graph_inv = defaultdict(list)
-
-        for src in self.graph.get_all_e():
-            for dest in self.graph.edges.get(src).keys():
-                graph_inv[dest].append({src: self.graph.edges.get(src).get(dest)})
-
-        return graph_inv
-
-    def DFS(self, v: int):
+    def DFS(self, v: int, b: bool):
         stack = deque()
         stack.append(self.graph.nodes.get(v))
         flag = True
@@ -115,9 +107,13 @@ class GraphAlgo(GraphAlgoInterface):
                 if self.graph.get_node(v.getKey()).getTag() == 1:
                     continue
                 self.graph.get_node(v.getKey()).setTag(1)
-                for edge in self.graph.edges:
-                    if self.graph.get_node(self.graph.get_node(edge).getTag()) == 0:
-                        stack.append(self.graph.get_node(edge.getDest()))
+                if b:
+                    u = self.graph.all_out_edges_of_node(v.getKey())
+                else:
+                    u = self.graph.all_out_edges_of_rev_node(v.getKey())
+                for e in u.keys():
+                    if self.graph.get_node(e).getTag() == 0:
+                        stack.append(self.graph.get_node(e))
             else:
                 flag = False
 
@@ -125,25 +121,17 @@ class GraphAlgo(GraphAlgoInterface):
         self.graph.reset_tags()
         it = iter(self.graph.nodes)
         v = next(it)
-        self.DFS(v)
+        self.DFS(v, True)
         for node in it:
             if self.graph.get_node(node).getTag() == 0:
                 return False
 
-        self.graph.reset_tags()
-        rev_edge = self.transpose()
-        self.graph.edges = rev_edge
-
         it2 = iter(self.graph.nodes)
-        z = next(it2)
-        self.DFS(z)
+        self.DFS(v, False)
         for node2 in it2:
-            if node2.getTag == 0:
+            if self.graph.get_node(node2).getTag() == 0:
                 return False
 
-        rerev_edges = self.transpose()
-        self.graph.edges = rerev_edges
         return True
 
     # TODO: add dijkstra as a seperate file/function
-

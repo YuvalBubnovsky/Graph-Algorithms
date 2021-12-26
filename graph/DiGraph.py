@@ -16,6 +16,8 @@ class DiGraph(GraphInterface):
         self.nodes = {}
         self.edges = {}
         self.edges = collections.defaultdict(dict)
+        self.rev_edges = {}
+        self.rev_edges = collections.defaultdict(dict)
         self.edge_counter = 0
         self.node_counter = 0
         self.mc = 0
@@ -54,13 +56,18 @@ class DiGraph(GraphInterface):
         return id_in_edges
 
     def all_out_edges_of_node(self, id1: int) -> dict:
-        return self.edges[id1]
+        return self.edges.get(id1, {})
+
+    def all_out_edges_of_rev_node(self, id1: int) -> dict:
+        return self.rev_edges.get(id1, {})
+
+    #  return self.edges[id1]
 
     def get_mc(self) -> int:
         return self.mc
 
     def add_edge(self, id1: int, id2: int, weight: float) -> bool:
-        if id1 not in self.nodes.keys() or id2 not in self.nodes.keys() or id1 == id2 or weight <=0 or id1<0 or id2<0:
+        if id1 not in self.nodes.keys() or id2 not in self.nodes.keys() or id1 == id2 or weight <= 0 or id1 < 0 or id2 < 0:
             return False
         if id1 in self.edges and id2 in self.edges[id1]:
             return False
@@ -72,14 +79,20 @@ class DiGraph(GraphInterface):
         self.mc += 1
         return True
 
+    def add_rev_edge(self, id1: int, id2: int, weight: float):
+        if id1 in self.rev_edges:
+            self.rev_edges.get(id1).update({id2: weight})
+        else:
+            self.rev_edges.update({id1: {id2: weight}})
+
     def add_node(self, node_id: int, pos: tuple = None) -> bool:
         if pos is None:
             loc_x = random.randrange(0, 10)
             loc_y = random.randrange(0, 10)
             pos_loc = (loc_x, loc_y, 0)
-            new_node = Node(key=node_id, position=pos_loc, tag = 0)
+            new_node = Node(key=node_id, position=pos_loc, tag=0)
         else:
-            new_node = Node(key=node_id, position=pos, tag = 0)
+            new_node = Node(key=node_id, position=pos, tag=0)
         if new_node.key not in self.nodes.keys():
             self.nodes[new_node.key] = new_node
             self.mc += 1
@@ -96,7 +109,9 @@ class DiGraph(GraphInterface):
             self.node_counter -= 1
             # delete all edges related to this node
             self.remove_in_edges(node_id)
+            self.remove_in_rev_edges(node_id)
             self.remove_out_edges(node_id)
+            self.remove_out_rev_edges(node_id)
             return True
         else:
             print("No Such ID")
@@ -109,11 +124,19 @@ class DiGraph(GraphInterface):
                 self.edge_counter -= 1
                 self.mc -= 1
 
+    def remove_in_rev_edges(self, id: int):
+        for edge_src in self.rev_edges.keys():
+            if id in self.rev_edges[edge_src]:
+                del self.rev_edges[edge_src][id]
+
     def remove_out_edges(self, id: int):
         out_edges_len = len(self.edges[id])
         del self.edges[id]
         self.edge_counter -= out_edges_len
         self.mc -= out_edges_len
+
+    def remove_out_rev_edges(self, id: int):
+        del self.rev_edges[id]
 
     def remove_edge(self, node_id1: int, node_id2: int) -> bool:
         if node_id1 in self.edges.keys() and node_id2 in self.edges.keys():
@@ -128,9 +151,6 @@ class DiGraph(GraphInterface):
     def reset_tags(self):
         for node in self.nodes:
             self.nodes.get(node).setTag(0)
-
-
-
 
     # TODO move this method to be help method of algorithms methods
     # def reverse_edges(self, edges: dict):

@@ -3,7 +3,7 @@ from graph.Location import Location
 
 
 class Node:
-    def __init__(self, key, position: tuple, tag):
+    def __init__(self, key, position: tuple, tag=0):
         self.key = key
         # self.position = position.copyLoc(position)
         self.tag = tag
