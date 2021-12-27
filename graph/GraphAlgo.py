@@ -1,23 +1,28 @@
 import heapq
 import json
 import math
+import tkinter
 from typing import List
 from collections import defaultdict
 from collections import deque
 import sys
+import matplotlib.pyplot as plt
+import tkinter as tk
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from graph.DiGraph import DiGraph
 from graph.GraphInterface import GraphInterface
 from graph.GraphAlgoInterface import GraphAlgoInterface
 
-import matplotlib.pyplot as plt
-import pygame
 
+# from graph import GUI
 
 class GraphAlgo(GraphAlgoInterface):
 
     def __init__(self):
         self.graph = DiGraph()
+        self.root = tk.Tk()
 
     @classmethod
     def init_graph(cls, graph: DiGraph):
@@ -144,9 +149,6 @@ class GraphAlgo(GraphAlgoInterface):
         for node in self.get_graph().get_all_v().values():
             node.weight = math.inf
 
-    def plot_graph(self) -> None:
-        pass
-
     def TSP(self, node_lst: List[int]) -> (List[int], float):
         if node_lst is None or len(node_lst) == 0:
             return None
@@ -172,7 +174,8 @@ class GraphAlgo(GraphAlgoInterface):
                 path.extend(currpath)  # adding the path to the end of the list
             else:
                 currpath.pop(0)
-                path.extend(currpath)  # adding the path to the end of the list without the first one in order to avoid duplicates
+                path.extend(
+                    currpath)  # adding the path to the end of the list without the first one in order to avoid duplicates
 
             overAllLength = overAllLength + minlength  # adding the length of current path to the total path length
             nextcity = currcity
@@ -242,5 +245,104 @@ class GraphAlgo(GraphAlgoInterface):
         for node2 in it2:
             if self.graph.get_node(node2).getTag() == 0:
                 return False
+        return True
 
-            return True
+    def plot_graph(self) -> None:
+        # self.init_window()
+        figure = plt.figure(figsize=(60, 24))
+        ax = figure.subplots()
+        plt.subplots_adjust(left=0.2, bottom=0.1)
+        # canvas = FigureCanvasTkAgg(figure, master=self.root)
+        # canvas.get_tk_widget().pack()
+        # ax = figure.add_subplot(111)
+        # canvas = FigureCanvasTkAgg(figure, master=self.root)
+        # canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+
+
+        # scaling all nodes positions to fit fig size
+        min_x, min_y, max_x, max_y = self.min_max_calculate()
+        x_pos, y_pos = self.scaling_positions(min_x, min_y, max_x, max_y)
+
+        # plot nodes
+        for curr in x_pos:
+            plt.plot(x_pos.get(curr), y_pos.get(curr), color='red')
+            plt.text(x_pos.get(curr) + 5, y_pos.get(curr) + 2.5, color='black')
+
+        plt.show()
+
+
+
+
+    def init_window(self):
+        self.root.geometry("750x650")
+        self.root.title("Graph App")
+        self.root.eval('tk::PlaceWindow . center')
+        self.root.resizable(False, False)
+        self.plot_graph()
+        load_button = tkinter.Button(self.root, text="load graph", command=self.plot_graph, fg='red')
+        load_button.place(x=0, y=0)
+        save_button = tkinter.Button(self.root, text="save graph", command=self.save_to_json, fg='red')
+        save_button.place(x=68, y=0)
+        short_path_button = tkinter.Button(self.root, text="shortest path", command=self.shortest_path, fg='red')
+        short_path_button.place(x=136, y=0)
+        tsp_button = tkinter.Button(self.root, text="TSP", command=self.TSP, fg='red')
+        tsp_button.place(x=216, y=0)
+        center_button = tkinter.Button(self.root, text="center point", command=self.centerPoint, fg='red')
+        center_button.place(x=248, y=0)
+        connected_button = tkinter.Button(self.root, text="is connected", command=self.is_connected, fg='red')
+        connected_button.place(x=322, y=0)
+
+        # figure = plt.figure(figsize=(30, 12))
+        # # plot = figure.subplots()
+        # # canvas = FigureCanvasTkAgg(figure, master=self.root)
+        # # canvas.get_tk_widget().pack()
+        # ax = figure.add_subplot(111)
+        # canvas = FigureCanvasTkAgg(figure, master=self.root)
+        # canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+
+        self.root.mainloop()
+
+    def min_max_calculate(self):
+        min_x = float('inf')
+        min_y = -float('inf')
+        max_x = float('inf')
+        max_y = -float('inf')
+
+        for node in self.graph.get_all_v().keys():
+            # min_x
+            if self.graph.get_node(node).getPosition().get_x() < min_x:
+                min_x = self.graph.get_node(node).getPosition().get_x()
+            # min_y
+            if self.graph.get_node(node).getPosition().get_y() < min_y:
+                min_y = self.graph.get_node(node).getPosition().get_y()
+            # max_x
+            if self.graph.get_node(node).getPosition().get_x() > max_x:
+                max_x = self.graph.get_node(node).getPosition().get_x()
+            # max_y
+            if self.graph.get_node(node).getPosition().get_y() > max_y:
+                min_x = self.graph.get_node(node).getPosition().get_y()
+
+        return [min_x, min_y, max_x, max_y]
+
+    def scaling_positions(self, min_x, min_y, max_x, max_y):
+        x_pos = {}
+        y_pos = {}
+        all_nodes = self.graph.get_all_v()
+
+        scale_x = 1000 / (max_x - min_x) * 0.9
+        scale_y = 1000 / (max_y - min_y) * 0.9
+        for node in all_nodes.keys():
+            x = (float(self.graph.get_node(node).get_x()) - min_x) * scale_x + 30
+            y = (float(self.graph.get_node(node).get_y()) - min_y) * scale_y + 90
+            x_pos[node] = int(x)
+            y_pos[node] = int(y)
+
+        return x_pos, y_pos
+
+
+
+
+if __name__ == '__main__':
+    graph = GraphAlgo()
+    graph.load_from_json(r"C:\Users\itama\PycharmProjects\OOP_2021_Ex3\data\A0.json")
+    graph.init_window()

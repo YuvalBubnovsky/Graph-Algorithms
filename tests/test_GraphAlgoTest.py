@@ -51,7 +51,5 @@ class MyTestCase(unittest.TestCase):
         shouldbe = [3, 4, 5, 6, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14]
         self.assertListEqual(shouldbe, tsp)
 
+    def test_shortest_path(self):
 
-if __name__ == '__main__':
-    runner = unittest.main()
-    runner.runTests()
