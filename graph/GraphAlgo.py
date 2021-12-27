@@ -8,6 +8,9 @@ from collections import deque
 import sys
 import matplotlib.pyplot as plt
 import tkinter as tk
+from tkinter import filedialog
+from tkinter.simpledialog import askstring, askinteger
+from tkinter.messagebox import showinfo
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -248,51 +251,26 @@ class GraphAlgo(GraphAlgoInterface):
         return True
 
     def plot_graph(self) -> None:
-        # self.init_window()
-        figure = plt.figure(figsize=(60, 24))
-        ax = figure.subplots()
-        plt.subplots_adjust(left=0.2, bottom=0.1)
-        # canvas = FigureCanvasTkAgg(figure, master=self.root)
-        # canvas.get_tk_widget().pack()
-        # ax = figure.add_subplot(111)
-        # canvas = FigureCanvasTkAgg(figure, master=self.root)
-        # canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
 
-
-        # scaling all nodes positions to fit fig size
-        min_x, min_y, max_x, max_y = self.min_max_calculate()
-        x_pos, y_pos = self.scaling_positions(min_x, min_y, max_x, max_y)
-
-        # plot nodes
-        for curr in x_pos:
-            plt.plot(x_pos.get(curr), y_pos.get(curr), color='red')
-            plt.text(x_pos.get(curr) + 5, y_pos.get(curr) + 2.5, color='black')
-
-        plt.show()
-
-
-
-
-    def init_window(self):
         self.root.geometry("750x650")
         self.root.title("Graph App")
         self.root.eval('tk::PlaceWindow . center')
         self.root.resizable(False, False)
-        self.plot_graph()
-        load_button = tkinter.Button(self.root, text="load graph", command=self.plot_graph, fg='red')
+        # self.plot_graph()
+        load_button = tkinter.Button(self.root, text="load graph", command=self.load_graph, fg='red')
         load_button.place(x=0, y=0)
-        save_button = tkinter.Button(self.root, text="save graph", command=self.save_to_json, fg='red')
+        save_button = tkinter.Button(self.root, text="save graph", command=self.save_graph, fg='red')
         save_button.place(x=68, y=0)
-        short_path_button = tkinter.Button(self.root, text="shortest path", command=self.shortest_path, fg='red')
+        short_path_button = tkinter.Button(self.root, text="shortest path", command=self.short_path, fg='red')
         short_path_button.place(x=136, y=0)
-        tsp_button = tkinter.Button(self.root, text="TSP", command=self.TSP, fg='red')
+        tsp_button = tkinter.Button(self.root, text="TSP", command=self.tsp, fg='red')
         tsp_button.place(x=216, y=0)
-        center_button = tkinter.Button(self.root, text="center point", command=self.centerPoint, fg='red')
+        center_button = tkinter.Button(self.root, text="center point", command=self.center, fg='red')
         center_button.place(x=248, y=0)
-        connected_button = tkinter.Button(self.root, text="is connected", command=self.is_connected, fg='red')
+        connected_button = tkinter.Button(self.root, text="is connected", command=self.connected, fg='red')
         connected_button.place(x=322, y=0)
 
-        # figure = plt.figure(figsize=(30, 12))
+        figure = plt.figure(figsize=(7.5, 6))
         # # plot = figure.subplots()
         # # canvas = FigureCanvasTkAgg(figure, master=self.root)
         # # canvas.get_tk_widget().pack()
@@ -300,12 +278,111 @@ class GraphAlgo(GraphAlgoInterface):
         # canvas = FigureCanvasTkAgg(figure, master=self.root)
         # canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
 
+        canvas = FigureCanvasTkAgg(figure=figure, master=self.root)
+        canvas.draw()
+        canvas.get_tk_widget().place(x=0, y=23)
+        min_x, min_y, max_x, max_y = self.min_max_calculate()
+        x_pos, y_pos = self.scaling_positions(min_x, min_y, max_x, max_y)
+
+        # plot nodes
+        i = 0
+        for curr in x_pos:
+            plt.plot(x_pos.get(curr), y_pos.get(curr), markersize=10, marker='o', color='red')
+            plt.text(x=x_pos.get(curr) - 1.5, y=y_pos.get(curr) - 3.5, s=str(i), color='black')
+            i += 1
+
+        # plot edges
+        for node in self.graph.get_all_v().keys():
+            # curr_edge = self.graph.get_edge(edge, s)
+            # x_src = self.graph.get_node(edge.getSrc()).get_x()
+            # y_src = self.graph.get_node(edge.getSrc()).get_y()
+            # x_dest = self.graph.get_node(edge.getDest()).get_x()
+            # y_dest = self.graph.get_node(edge.getDest()).get_y()
+            # x_points, y_points = self.draw_arrow(edge.weight, x_src, y_src, x_dest, y_dest)
+            all_out_edges = self.graph.all_out_edges_of_node(node)
+            x_src = x_pos.get(node)
+            y_src = y_pos.get(node)
+            for edge in all_out_edges:
+                x_dest = x_pos.get(edge)
+                y_dest = y_pos.get(edge)
+                plt.annotate("", xy=(x_dest, y_dest), xytext=(x_src, y_src),
+                             arrowprops=dict(arrowstyle="->"))
+                # TODO: plot weights
+
+                # weight = all_out_edges.get(edge)
+                # weight = '{0:.4f}'.format(weight)
+                # plt.text(x=abs(x_dest - x_src), y=max(x_dest, x_src), s=str(weight).format())
+                # plt.text(x=x_dest, y=y_dest, s=str(weight))
+
+        plt.show()
+
         self.root.mainloop()
+
+    # the following methods are responsible to handle clicks on buttons
+    def load_graph(self):
+        file_name = filedialog.askopenfilename(title="Open file", initialdir='/../../PycharmProjects',
+                                               filetypes=(('json files', '*.json'), ('All files', '*.*')))
+        self.load_from_json(file_name)
+        self.root.withdraw()
+        self.plot_graph()
+
+    def save_graph(self):
+        file_name = filedialog.asksaveasfile(title="Save file", initialdir='/../../PycharmProjects', filetypes=(('json files', '*.json'), ('All files', '*.*')))
+        self.save_to_json(file_name.name)
+
+    def short_path(self):
+        src = askinteger(title="Source", prompt="Enter Source Node")
+        dest = askinteger("Destination", "Enter Destination Node")
+        dist = self.shortest_path(src, dest)[0]
+        path = self.shortest_path(src, dest)[1]
+        path_str = ""
+        for node in path:
+            path_str += str(node)
+            path_str += "->"
+        path_str = path_str[:-2]
+        showinfo(title="shortest path",message="Shortest Path Dist Is: {dist}, Path is: {path} ".format(dist=dist, path=path_str))
+
+    def tsp(self):
+        node_list = []
+        node = askinteger(title="enter node", prompt="Enter Node ID, to finish press -1")
+        while node != -1:
+            if node > 0 and node in self.graph.nodes.keys():
+                node_list.append(node)
+                node = askinteger(title="enter node", prompt="Enter Another Node ID, to finish press -1")
+            # elif node not in self.graph.nodes.keys():
+            #     showinfo(title="Error", message="No Such ID")
+            #     node = askinteger(title="enter node", prompt="Enter Another Node ID, to finish press -1")
+            else:
+                showinfo(title="Error",message="invalid id, whether id does not exist or negative ID was entered")
+                node = askinteger(title="enter node", prompt="Enter Another Node ID, to finish press -1")
+        tsp_result = self.TSP(node_lst=node_list)
+        path = tsp_result[0]
+        dist = tsp_result[1]
+        path_str = ""
+        for node in path:
+            path_str += str(node)
+            path_str += "->"
+        path_str = path_str[:-2]
+        showinfo(title="TSP",message="TSP Dist Is: {dist}, Path is: {path} ".format(dist=dist, path=path_str))
+
+    def center(self):
+        result = self.centerPoint()
+        center_node = result[0]
+        min_distance = result[1]
+        showinfo(title="center", message="Center Vertex is: {vertex}, minimum distance is {dis}".format(vertex=center_node,dis=min_distance))
+
+    def connected(self):
+        result = self.is_connected()
+        if result:
+            showinfo(title="Is Connected", message="The Graph Is Connected")
+        else:
+            showinfo(title="Is Connected", message="The Graph Is Not Connected")
+
 
     def min_max_calculate(self):
         min_x = float('inf')
-        min_y = -float('inf')
-        max_x = float('inf')
+        min_y = float('inf')
+        max_x = -float('inf')
         max_y = -float('inf')
 
         for node in self.graph.get_all_v().keys():
@@ -320,7 +397,7 @@ class GraphAlgo(GraphAlgoInterface):
                 max_x = self.graph.get_node(node).getPosition().get_x()
             # max_y
             if self.graph.get_node(node).getPosition().get_y() > max_y:
-                min_x = self.graph.get_node(node).getPosition().get_y()
+                max_y = self.graph.get_node(node).getPosition().get_y()
 
         return [min_x, min_y, max_x, max_y]
 
@@ -332,17 +409,34 @@ class GraphAlgo(GraphAlgoInterface):
         scale_x = 1000 / (max_x - min_x) * 0.9
         scale_y = 1000 / (max_y - min_y) * 0.9
         for node in all_nodes.keys():
-            x = (float(self.graph.get_node(node).get_x()) - min_x) * scale_x + 30
-            y = (float(self.graph.get_node(node).get_y()) - min_y) * scale_y + 90
+            x = (self.graph.get_node(node).get_x() - min_x) * scale_x + 30
+            y = (self.graph.get_node(node).get_y() - min_y) * scale_y + 90
             x_pos[node] = int(x)
             y_pos[node] = int(y)
 
         return x_pos, y_pos
 
-
+    # def draw_arrow(self, weight, x_src, y_src, x_dest, y_dest):
+    #     width = 8.0
+    #     height = 4.0
+    #     x_value = (x_dest - x_src)
+    #     y_value = (y_dest - y_src)
+    #     dist_between_nodes = math.sqrt(x_value * x_value + y_value * y_value)
+    #     sin_val = y_value / dist_between_nodes
+    #     cos_val = x_value / dist_between_nodes
+    #
+    #     y_head1 = (dist_between_nodes - width) * sin_val + height * cos_val + y_src
+    #     x_head1 = (dist_between_nodes - width) * cos_val + height * sin_val + y_src
+    #     y_head2 = (dist_between_nodes - width) * sin_val - 1 * height * cos_val + y_src
+    #     x_head2 = (dist_between_nodes - width) * cos_val + 1 * height * sin_val + y_src
+    #
+    #     x_points = [int(x_dest), int(x_head1), int(x_head2)]
+    #     y_points = [int(y_dest), int(y_head1), int(y_head2)]
+    #
+    #     return x_points, y_points
 
 
 if __name__ == '__main__':
     graph = GraphAlgo()
     graph.load_from_json(r"C:\Users\itama\PycharmProjects\OOP_2021_Ex3\data\A0.json")
-    graph.init_window()
+    graph.plot_graph()

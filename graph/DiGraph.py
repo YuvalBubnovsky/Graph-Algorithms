@@ -1,6 +1,7 @@
 import collections
 import random
 
+from graph.Edge import Edge
 from graph.Node import Node
 from graph.GraphInterface import GraphInterface
 
@@ -47,6 +48,15 @@ class DiGraph(GraphInterface):
             return self.nodes.get(n)
         else:
             print("No such node in graph")
+
+    def get_edge(self, src: int, dest: int) -> Edge:
+        if self.edges.get(src):
+            all_out_edges = self.all_out_edges_of_node(src)
+            for edge_dest in all_out_edges.keys():
+                if edge_dest == dest:
+                    return Edge(src, dest, all_out_edges.get(edge_dest)) # third argument is weight
+        else:
+            print("No Such Edge In Graph")
 
     def all_in_edges_of_node(self, id1: int) -> dict:
         id_in_edges = {}
