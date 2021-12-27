@@ -9,23 +9,29 @@ import sys
 import matplotlib.pyplot as plt
 import tkinter as tk
 from tkinter import filedialog
-from tkinter.simpledialog import askstring, askinteger
+from tkinter.simpledialog import askstring, askinteger, askfloat
 from tkinter.messagebox import showinfo
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from graph.DiGraph import DiGraph
+from graph.Edge import Edge
 from graph.GraphInterface import GraphInterface
 from graph.GraphAlgoInterface import GraphAlgoInterface
 
-
 # from graph import GUI
+from graph.Location import Location
+
 
 class GraphAlgo(GraphAlgoInterface):
 
     def __init__(self):
         self.graph = DiGraph()
         self.root = tk.Tk()
+        self.min_x = float('inf')
+        self.min_y = float('inf')
+        self.max_x = -float('inf')
+        self.max_y = -float('inf')
 
     @classmethod
     def init_graph(cls, graph: DiGraph):
@@ -269,6 +275,14 @@ class GraphAlgo(GraphAlgoInterface):
         center_button.place(x=248, y=0)
         connected_button = tkinter.Button(self.root, text="is connected", command=self.connected, fg='red')
         connected_button.place(x=322, y=0)
+        add_node_button = tkinter.Button(self.root, text="add vertex", command=self.add_node, fg='red')
+        add_node_button.place(x=397, y=0)
+        add_edge_button = tkinter.Button(self.root, text="add edge", command=self.add_edge, fg='red')
+        add_edge_button.place(x=462, y=0)
+        remove_node_button = tkinter.Button(self.root, text="remove node", command=self.remove_node, fg='red')
+        remove_node_button.place(x=522, y=0)
+        remove_edge_button = tkinter.Button(self.root, text="remove edge", command=self.remove_edge, fg='red')
+        remove_edge_button.place(x=603, y=0)
 
         figure = plt.figure(figsize=(7.5, 6))
         # # plot = figure.subplots()
@@ -281,8 +295,8 @@ class GraphAlgo(GraphAlgoInterface):
         canvas = FigureCanvasTkAgg(figure=figure, master=self.root)
         canvas.draw()
         canvas.get_tk_widget().place(x=0, y=23)
-        min_x, min_y, max_x, max_y = self.min_max_calculate()
-        x_pos, y_pos = self.scaling_positions(min_x, min_y, max_x, max_y)
+        self.min_max_calculate()
+        x_pos, y_pos = self.scaling_positions(self.min_x, self.min_y, self.max_x, self.max_y)
 
         # plot nodes
         i = 0
@@ -327,7 +341,8 @@ class GraphAlgo(GraphAlgoInterface):
         self.plot_graph()
 
     def save_graph(self):
-        file_name = filedialog.asksaveasfile(title="Save file", initialdir='/../../PycharmProjects', filetypes=(('json files', '*.json'), ('All files', '*.*')))
+        file_name = filedialog.asksaveasfile(title="Save file", initialdir='/../../PycharmProjects',
+                                             filetypes=(('json files', '*.json'), ('All files', '*.*')))
         self.save_to_json(file_name.name)
 
     def short_path(self):
@@ -340,7 +355,8 @@ class GraphAlgo(GraphAlgoInterface):
             path_str += str(node)
             path_str += "->"
         path_str = path_str[:-2]
-        showinfo(title="shortest path",message="Shortest Path Dist Is: {dist}, Path is: {path} ".format(dist=dist, path=path_str))
+        showinfo(title="shortest path",
+                 message="Shortest Path Dist Is: {dist}, Path is: {path} ".format(dist=dist, path=path_str))
 
     def tsp(self):
         node_list = []
@@ -353,23 +369,27 @@ class GraphAlgo(GraphAlgoInterface):
             #     showinfo(title="Error", message="No Such ID")
             #     node = askinteger(title="enter node", prompt="Enter Another Node ID, to finish press -1")
             else:
-                showinfo(title="Error",message="invalid id, whether id does not exist or negative ID was entered")
+                showinfo(title="Error", message="invalid id, whether id does not exist or negative ID was entered")
                 node = askinteger(title="enter node", prompt="Enter Another Node ID, to finish press -1")
         tsp_result = self.TSP(node_lst=node_list)
         path = tsp_result[0]
         dist = tsp_result[1]
+        if len(path) == 0:
+            showinfo(title="TSP", message="There is no path between those nodes")
         path_str = ""
         for node in path:
             path_str += str(node)
             path_str += "->"
         path_str = path_str[:-2]
-        showinfo(title="TSP",message="TSP Dist Is: {dist}, Path is: {path} ".format(dist=dist, path=path_str))
+        showinfo(title="TSP", message="TSP Dist Is: {dist}, Path is: {path} ".format(dist=dist, path=path_str))
 
     def center(self):
         result = self.centerPoint()
         center_node = result[0]
         min_distance = result[1]
-        showinfo(title="center", message="Center Vertex is: {vertex}, minimum distance is {dis}".format(vertex=center_node,dis=min_distance))
+        showinfo(title="center",
+                 message="Center Vertex is: {vertex}, minimum distance is {dis}".format(vertex=center_node,
+                                                                                        dis=min_distance))
 
     def connected(self):
         result = self.is_connected()
@@ -378,28 +398,56 @@ class GraphAlgo(GraphAlgoInterface):
         else:
             showinfo(title="Is Connected", message="The Graph Is Not Connected")
 
+    def add_node(self):
+        key = self.graph.node_counter
+        x = askfloat(title="X", prompt="Enter X position")
+        y = askfloat(title="Y", prompt="Enter Y position")
+
+        x, y = self.linear_transform(x, y)
+
+        self.graph.add_node(key, (x, y, 0))
+
+        self.plot_graph()
+
+    def add_edge(self):
+        src = askinteger(title="Source", prompt="Enter Source node ID")
+        dest = askinteger(title="Destination", prompt="Enter destination node ID")
+        weight = askfloat(title="Weight", prompt="Enter Weight")
+        self.graph.add_edge(src, dest, weight)
+
+        self.plot_graph()
+
+    def remove_node(self):
+        key = askinteger(title="ID", prompt="Enter ID")
+        self.graph.remove_node(key)
+
+        self.plot_graph()
+
+    def remove_edge(self):
+        src = askinteger(title="Source", prompt="Enter Source node ID")
+        dest = askinteger(title="Destination", prompt="Enter destination node ID")
+
+        self.graph.remove_edge(src, dest)
+
+        self.plot_graph()
 
     def min_max_calculate(self):
-        min_x = float('inf')
-        min_y = float('inf')
-        max_x = -float('inf')
-        max_y = -float('inf')
 
         for node in self.graph.get_all_v().keys():
             # min_x
-            if self.graph.get_node(node).getPosition().get_x() < min_x:
-                min_x = self.graph.get_node(node).getPosition().get_x()
+            if self.graph.get_node(node).getPosition().get_x() < self.min_x:
+                self.min_x = self.graph.get_node(node).getPosition().get_x()
             # min_y
-            if self.graph.get_node(node).getPosition().get_y() < min_y:
-                min_y = self.graph.get_node(node).getPosition().get_y()
+            if self.graph.get_node(node).getPosition().get_y() < self.min_y:
+                self.min_y = self.graph.get_node(node).getPosition().get_y()
             # max_x
-            if self.graph.get_node(node).getPosition().get_x() > max_x:
-                max_x = self.graph.get_node(node).getPosition().get_x()
+            if self.graph.get_node(node).getPosition().get_x() > self.max_x:
+                self.max_x = self.graph.get_node(node).getPosition().get_x()
             # max_y
-            if self.graph.get_node(node).getPosition().get_y() > max_y:
-                max_y = self.graph.get_node(node).getPosition().get_y()
+            if self.graph.get_node(node).getPosition().get_y() > self.max_y:
+                self.max_y = self.graph.get_node(node).getPosition().get_y()
 
-        return [min_x, min_y, max_x, max_y]
+        # return [min_x, min_y, max_x, max_y]
 
     def scaling_positions(self, min_x, min_y, max_x, max_y):
         x_pos = {}
@@ -416,25 +464,14 @@ class GraphAlgo(GraphAlgoInterface):
 
         return x_pos, y_pos
 
-    # def draw_arrow(self, weight, x_src, y_src, x_dest, y_dest):
-    #     width = 8.0
-    #     height = 4.0
-    #     x_value = (x_dest - x_src)
-    #     y_value = (y_dest - y_src)
-    #     dist_between_nodes = math.sqrt(x_value * x_value + y_value * y_value)
-    #     sin_val = y_value / dist_between_nodes
-    #     cos_val = x_value / dist_between_nodes
-    #
-    #     y_head1 = (dist_between_nodes - width) * sin_val + height * cos_val + y_src
-    #     x_head1 = (dist_between_nodes - width) * cos_val + height * sin_val + y_src
-    #     y_head2 = (dist_between_nodes - width) * sin_val - 1 * height * cos_val + y_src
-    #     x_head2 = (dist_between_nodes - width) * cos_val + 1 * height * sin_val + y_src
-    #
-    #     x_points = [int(x_dest), int(x_head1), int(x_head2)]
-    #     y_points = [int(y_dest), int(y_head1), int(y_head2)]
-    #
-    #     return x_points, y_points
-
+    def linear_transform(self, x, y):
+        x_value = self.max_x - x
+        calculated_x = self.max_x - self.min_x
+        y_value = self.max_y - y
+        calculated_y = self.max_y - self.min_y
+        final_x = x_value / calculated_x * 0.68
+        final_y = y_value / calculated_y * 0.68
+        return final_y, final_y
 
 if __name__ == '__main__':
     graph = GraphAlgo()
