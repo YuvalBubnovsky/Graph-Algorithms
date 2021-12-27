@@ -477,3 +477,6 @@ if __name__ == '__main__':
     graph = GraphAlgo()
     graph.load_from_json(r"C:\Users\itama\PycharmProjects\OOP_2021_Ex3\data\A0.json")
     graph.plot_graph()
+
+    #TODO: - refreshing plot so it won't close and open in every update- maybe clear method?
+
