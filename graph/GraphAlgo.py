@@ -284,13 +284,11 @@ class GraphAlgo(GraphAlgoInterface):
         remove_edge_button = tkinter.Button(self.root, text="remove edge", command=self.remove_edge, fg='red')
         remove_edge_button.place(x=603, y=0)
 
+        self.refresh()
+        self.root.mainloop()
+
+    def refresh(self):
         figure = plt.figure(figsize=(7.5, 6))
-        # # plot = figure.subplots()
-        # # canvas = FigureCanvasTkAgg(figure, master=self.root)
-        # # canvas.get_tk_widget().pack()
-        # ax = figure.add_subplot(111)
-        # canvas = FigureCanvasTkAgg(figure, master=self.root)
-        # canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
 
         canvas = FigureCanvasTkAgg(figure=figure, master=self.root)
         canvas.draw()
@@ -307,12 +305,6 @@ class GraphAlgo(GraphAlgoInterface):
 
         # plot edges
         for node in self.graph.get_all_v().keys():
-            # curr_edge = self.graph.get_edge(edge, s)
-            # x_src = self.graph.get_node(edge.getSrc()).get_x()
-            # y_src = self.graph.get_node(edge.getSrc()).get_y()
-            # x_dest = self.graph.get_node(edge.getDest()).get_x()
-            # y_dest = self.graph.get_node(edge.getDest()).get_y()
-            # x_points, y_points = self.draw_arrow(edge.weight, x_src, y_src, x_dest, y_dest)
             all_out_edges = self.graph.all_out_edges_of_node(node)
             x_src = x_pos.get(node)
             y_src = y_pos.get(node)
@@ -330,24 +322,25 @@ class GraphAlgo(GraphAlgoInterface):
 
         plt.show()
 
-        self.root.mainloop()
-
     # the following methods are responsible to handle clicks on buttons
     def load_graph(self):
         file_name = filedialog.askopenfilename(title="Open file", initialdir='/../../PycharmProjects',
                                                filetypes=(('json files', '*.json'), ('All files', '*.*')))
         self.load_from_json(file_name)
-        self.root.withdraw()
-        self.plot_graph()
+        self.refresh()
 
     def save_graph(self):
         file_name = filedialog.asksaveasfile(title="Save file", initialdir='/../../PycharmProjects',
                                              filetypes=(('json files', '*.json'), ('All files', '*.*')))
-        self.save_to_json(file_name.name)
+        result = self.save_to_json(file_name.name)
+        if result:
+            showinfo(title="message", message="Graph was saved successfully")
+        else:
+            showinfo(title="message", message="Graph was not saved successfully")
 
     def short_path(self):
         src = askinteger(title="Source", prompt="Enter Source Node")
-        dest = askinteger("Destination", "Enter Destination Node")
+        dest = askinteger(title="Destination", prompt="Enter Destination Node")
         dist = self.shortest_path(src, dest)[0]
         path = self.shortest_path(src, dest)[1]
         path_str = ""
@@ -407,7 +400,7 @@ class GraphAlgo(GraphAlgoInterface):
 
         self.graph.add_node(key, (x, y, 0))
 
-        self.plot_graph()
+        self.refresh()
 
     def add_edge(self):
         src = askinteger(title="Source", prompt="Enter Source node ID")
@@ -415,13 +408,13 @@ class GraphAlgo(GraphAlgoInterface):
         weight = askfloat(title="Weight", prompt="Enter Weight")
         self.graph.add_edge(src, dest, weight)
 
-        self.plot_graph()
+        self.refresh()
 
     def remove_node(self):
         key = askinteger(title="ID", prompt="Enter ID")
         self.graph.remove_node(key)
 
-        self.plot_graph()
+        self.refresh()
 
     def remove_edge(self):
         src = askinteger(title="Source", prompt="Enter Source node ID")
@@ -429,7 +422,7 @@ class GraphAlgo(GraphAlgoInterface):
 
         self.graph.remove_edge(src, dest)
 
-        self.plot_graph()
+        self.refresh()
 
     def min_max_calculate(self):
 
@@ -475,8 +468,6 @@ class GraphAlgo(GraphAlgoInterface):
 
 if __name__ == '__main__':
     graph = GraphAlgo()
-    graph.load_from_json(r"C:\Users\itama\PycharmProjects\OOP_2021_Ex3\data\A0.json")
+    graph.load_from_json(r"C:\Users\itama\PycharmProjects\OOP_2021_Ex3\data\A1.json")
     graph.plot_graph()
-
-    #TODO: - refreshing plot so it won't close and open in every update- maybe clear method?
 
