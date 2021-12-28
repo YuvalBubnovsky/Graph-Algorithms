@@ -393,10 +393,11 @@ class GraphAlgo(GraphAlgoInterface):
 
     def add_node(self):
         key = self.graph.node_counter
+        showinfo(title="key", message="the key of the new vertex is: {key}".format(key=key))
         x = askfloat(title="X", prompt="Enter X position")
         y = askfloat(title="Y", prompt="Enter Y position")
 
-        x, y = self.linear_transform(x, y)
+        # x, y = self.linear_transform(x, y)
 
         self.graph.add_node(key, (x, y, 0))
 
@@ -464,10 +465,10 @@ class GraphAlgo(GraphAlgoInterface):
         calculated_y = self.max_y - self.min_y
         final_x = x_value / calculated_x * 0.68
         final_y = y_value / calculated_y * 0.68
-        return final_y, final_y
+        return final_x, final_y
 
 if __name__ == '__main__':
     graph = GraphAlgo()
-    graph.load_from_json(r"C:\Users\itama\PycharmProjects\OOP_2021_Ex3\data\A1.json")
+    graph.load_from_json(r"C:\Users\itama\PycharmProjects\OOP_2021_Ex3\data\A0.json")
     graph.plot_graph()
 

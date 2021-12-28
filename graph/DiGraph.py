@@ -146,7 +146,8 @@ class DiGraph(GraphInterface):
         self.mc -= out_edges_len
 
     def remove_out_rev_edges(self, id: int):
-        del self.rev_edges[id]
+        if len(self.rev_edges[id].values()) != 0:
+            del self.rev_edges[id]
 
     def remove_edge(self, node_id1: int, node_id2: int) -> bool:
         if node_id1 in self.edges.keys() and node_id2 in self.edges.keys():
