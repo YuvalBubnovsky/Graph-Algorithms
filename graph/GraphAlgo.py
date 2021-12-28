@@ -11,6 +11,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter.simpledialog import askstring, askinteger, askfloat
 from tkinter.messagebox import showinfo
+import os
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -25,17 +26,26 @@ from graph.Location import Location
 
 class GraphAlgo(GraphAlgoInterface):
 
-    def __init__(self):
-        self.graph = DiGraph()
+    def __init__(self, *args):
+        if len(args) == 1:
+            self.graph = args[0]
+        else:
+            self.graph = DiGraph()
         self.root = tk.Tk()
         self.min_x = float('inf')
         self.min_y = float('inf')
         self.max_x = -float('inf')
         self.max_y = -float('inf')
 
-    @classmethod
-    def init_graph(cls, graph: DiGraph):
-        DiGraph.init_graph(graph.nodes, graph.edges)
+    # @classmethod
+    # def init_graph(cls, g: DiGraph):
+    #     DiGraph.init_graph(g.nodes, g.edges)
+    #     return cls()
+        # self.root = tk.Tk()
+        # self.min_x = float('inf')
+        # self.min_y = float('inf')
+        # self.max_x = -float('inf')
+        # self.max_y = -float('inf')
 
     def get_graph(self) -> GraphInterface:
         return self.graph
@@ -44,6 +54,9 @@ class GraphAlgo(GraphAlgoInterface):
         """loading graph from JSON file
             :param file_name: JSON file to read the graph from
             :return True if graph was loaded successfully, False otherwise"""
+        # if file_name.startswith(".."):
+        #     file_name = file_name[2:]
+        #     file_name = os.path.join("C:\Users\itama\PycharmProjects\OOP_2021_Ex3\\", file_name)
         try:
             with open(file_name, "r") as incoming:
                 data = json.load(incoming)
@@ -257,6 +270,9 @@ class GraphAlgo(GraphAlgoInterface):
         return True
 
     def plot_graph(self) -> None:
+        """
+        This method responsibility is to initialize the tkinter window the graph will be plotted on
+        """
 
         self.root.geometry("750x650")
         self.root.title("Graph App")
@@ -279,17 +295,20 @@ class GraphAlgo(GraphAlgoInterface):
         add_node_button.place(x=397, y=0)
         add_edge_button = tkinter.Button(self.root, text="add edge", command=self.add_edge, fg='red')
         add_edge_button.place(x=462, y=0)
-        remove_node_button = tkinter.Button(self.root, text="remove node", command=self.remove_node, fg='red')
+        remove_node_button = tkinter.Button(self.root, text="remove vertex", command=self.remove_node, fg='red')
         remove_node_button.place(x=522, y=0)
         remove_edge_button = tkinter.Button(self.root, text="remove edge", command=self.remove_edge, fg='red')
-        remove_edge_button.place(x=603, y=0)
+        remove_edge_button.place(x=606, y=0)
 
         self.refresh()
         self.root.mainloop()
 
     def refresh(self):
+        """
+        This method responsibility is to plot the graph on the tkinter window.
+        This method is called each time a vertex or edge are added
+        """
         figure = plt.figure(figsize=(7.5, 6))
-
         canvas = FigureCanvasTkAgg(figure=figure, master=self.root)
         canvas.draw()
         canvas.get_tk_widget().place(x=0, y=23)
@@ -304,21 +323,20 @@ class GraphAlgo(GraphAlgoInterface):
             i += 1
 
         # plot edges
-        for node in self.graph.get_all_v().keys():
-            all_out_edges = self.graph.all_out_edges_of_node(node)
-            x_src = x_pos.get(node)
-            y_src = y_pos.get(node)
-            for edge in all_out_edges:
-                x_dest = x_pos.get(edge)
-                y_dest = y_pos.get(edge)
-                plt.annotate("", xy=(x_dest, y_dest), xytext=(x_src, y_src),
-                             arrowprops=dict(arrowstyle="->"))
-                # TODO: plot weights
-
-                weight = all_out_edges.get(edge)
-                weight = '{0:.4f}'.format(weight)
-                plt.text(x=x_src * 0.7 + x_dest * 0.3, y=y_src * 0.72 + y_dest * 0.32, s=str(weight))
-                # plt.text(x=x_dest, y=y_dest, s=str(weight))
+        # if len(x_pos) == 0 and len(y_pos) == 0:
+            for node in self.graph.get_all_v().keys():
+                all_out_edges = self.graph.all_out_edges_of_node(node)
+                x_src = x_pos.get(node)
+                y_src = y_pos.get(node)
+                for edge in all_out_edges:
+                    x_dest = x_pos.get(edge)
+                    y_dest = y_pos.get(edge)
+                    plt.annotate("", xy=(x_dest, y_dest), xytext=(x_src, y_src),
+                                 arrowprops=dict(arrowstyle="->"))
+                    # plot weights
+                    weight = all_out_edges.get(edge)
+                    weight = '{0:.4f}'.format(weight)
+                    plt.text(x=x_src * 0.7 + x_dest * 0.3, y=y_src * 0.72 + y_dest * 0.32, s=str(weight))
 
         plt.show()
 
@@ -426,20 +444,23 @@ class GraphAlgo(GraphAlgoInterface):
         self.refresh()
 
     def min_max_calculate(self):
-
         for node in self.graph.get_all_v().keys():
             # min_x
-            if self.graph.get_node(node).getPosition().get_x() < self.min_x:
-                self.min_x = self.graph.get_node(node).getPosition().get_x()
+            if self.graph.get_node(node).getPosition().get_x() is not None:
+                if self.graph.get_node(node).getPosition().get_x() < self.min_x:
+                    self.min_x = self.graph.get_node(node).getPosition().get_x()
             # min_y
-            if self.graph.get_node(node).getPosition().get_y() < self.min_y:
-                self.min_y = self.graph.get_node(node).getPosition().get_y()
+            if self.graph.get_node(node).getPosition().get_y() is not None:
+                if self.graph.get_node(node).getPosition().get_y() < self.min_y:
+                    self.min_y = self.graph.get_node(node).getPosition().get_y()
             # max_x
-            if self.graph.get_node(node).getPosition().get_x() > self.max_x:
-                self.max_x = self.graph.get_node(node).getPosition().get_x()
+            if self.graph.get_node(node).getPosition().get_x() is not None:
+                if self.graph.get_node(node).getPosition().get_x() > self.max_x:
+                    self.max_x = self.graph.get_node(node).getPosition().get_x()
             # max_y
-            if self.graph.get_node(node).getPosition().get_y() > self.max_y:
-                self.max_y = self.graph.get_node(node).getPosition().get_y()
+            if self.graph.get_node(node).getPosition().get_y() is not None:
+                if self.graph.get_node(node).getPosition().get_y() > self.max_y:
+                    self.max_y = self.graph.get_node(node).getPosition().get_y()
 
         # return [min_x, min_y, max_x, max_y]
 
@@ -451,10 +472,14 @@ class GraphAlgo(GraphAlgoInterface):
         scale_x = 1000 / (max_x - min_x) * 0.9
         scale_y = 1000 / (max_y - min_y) * 0.9
         for node in all_nodes.keys():
-            x = (self.graph.get_node(node).get_x() - min_x) * scale_x + 30
-            y = (self.graph.get_node(node).get_y() - min_y) * scale_y + 90
-            x_pos[node] = int(x)
-            y_pos[node] = int(y)
+            if self.graph.get_node(node).get_x() is not None:
+                x = (self.graph.get_node(node).get_x() - min_x) * scale_x + 30
+                x_pos[node] = int(x)
+            if self.graph.get_node(node).get_y() is not None:
+                y = (self.graph.get_node(node).get_y() - min_y) * scale_y + 90
+                y_pos[node] = int(y)
+            # x_pos[node] = int(x)
+            # y_pos[node] = int(y)
 
         return x_pos, y_pos
 
