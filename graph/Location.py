@@ -1,6 +1,10 @@
 import copy
 import math
 
+'''
+A class which represents a location in a 3D plane
+'''
+
 
 class Location:
 

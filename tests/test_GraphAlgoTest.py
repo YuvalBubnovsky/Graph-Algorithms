@@ -50,6 +50,3 @@ class MyTestCase(unittest.TestCase):
         tsp = self.graphAlgo.TSP(cities)[0]
         shouldbe = [3, 4, 5, 6, 2, 6, 7, 8, 9, 10, 11, 12, 13, 14]
         self.assertListEqual(shouldbe, tsp)
-
-    def test_shortest_path(self):
-

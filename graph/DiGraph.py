@@ -5,6 +5,13 @@ from graph.Edge import Edge
 from graph.Node import Node
 from graph.GraphInterface import GraphInterface
 
+'''
+This class represents the underlying graph upon which we will run algorithms on, it is a 
+directed weighted graph using dictionaries to represent a Node -> Edge mapping to utilize
+as we perform various calculations.
+It supports various methods.
+'''
+
 
 class DiGraph(GraphInterface):
 
@@ -49,15 +56,6 @@ class DiGraph(GraphInterface):
         else:
             print("No such node in graph")
 
-    # def get_edge(self, src: int, dest: int) -> Edge:
-    #     if self.edges.get(src):
-    #         all_out_edges = self.all_out_edges_of_node(src)
-    #         for edge_dest in all_out_edges.keys():
-    #             if edge_dest == dest:
-    #                 return Edge(src, dest, all_out_edges.get(edge_dest)) # third argument is weight
-    #     else:
-    #         print("No Such Edge In Graph")
-
     def all_in_edges_of_node(self, id1: int) -> dict:
         id_in_edges = {}
         for edge_src in self.edges.keys():
@@ -70,8 +68,6 @@ class DiGraph(GraphInterface):
 
     def all_out_edges_of_rev_node(self, id1: int) -> dict:
         return self.rev_edges.get(id1, {})
-
-    #  return self.edges[id1]
 
     def get_mc(self) -> int:
         return self.mc

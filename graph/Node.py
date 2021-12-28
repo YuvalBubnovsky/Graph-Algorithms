@@ -1,6 +1,10 @@
 import copy
 from graph.Location import Location
 
+'''
+A class to represent a Node in a weighted directed graph
+'''
+
 
 class Node:
     def __init__(self, key, position: tuple, tag=0):
@@ -9,6 +13,7 @@ class Node:
         self.tag = tag
         pos_location = Location(position[0], position[1], position[2])
         self.position = Location(pos_location.get_x(), pos_location.get_y(), pos_location.get_z())
+        self.weight = None
 
     @classmethod
     def copyNode(cls, node):

@@ -1,5 +1,9 @@
 import copy
 
+'''
+A class to represent an Edge in a weighted directed graph
+'''
+
 
 class Edge:
 

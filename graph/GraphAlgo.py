@@ -1,27 +1,34 @@
 import heapq
 import json
 import math
-import tkinter
-from typing import List
-from collections import defaultdict
-from collections import deque
+import random
 import sys
-import matplotlib.pyplot as plt
-import tkinter as tk
-from tkinter import filedialog
-from tkinter.simpledialog import askstring, askinteger, askfloat
-from tkinter.messagebox import showinfo
-import os
+from collections import deque
+from typing import List
 
+import matplotlib.pyplot as plt
+import tkinter
+import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkinter import filedialog
+from tkinter.messagebox import showinfo
+from tkinter.simpledialog import askinteger, askfloat
 
 from graph.DiGraph import DiGraph
-from graph.Edge import Edge
-from graph.GraphInterface import GraphInterface
 from graph.GraphAlgoInterface import GraphAlgoInterface
+from graph.GraphInterface import GraphInterface
 
-# from graph import GUI
-from graph.Location import Location
+'''
+This class is used to perform various algorithms on the underlying directed weighted graph.
+It supports these algorithms:
+    * Depth-First Search
+    * Dijkstr'a Shortest Path
+    * Determining if a graph is strongly connected
+    * Finding the center of the graph
+    * Augmented TSP 
+
+This class also plots the graph and displays it to the user using tkinter
+'''
 
 
 class GraphAlgo(GraphAlgoInterface):
@@ -37,16 +44,6 @@ class GraphAlgo(GraphAlgoInterface):
         self.max_x = -float('inf')
         self.max_y = -float('inf')
 
-    # @classmethod
-    # def init_graph(cls, g: DiGraph):
-    #     DiGraph.init_graph(g.nodes, g.edges)
-    #     return cls()
-        # self.root = tk.Tk()
-        # self.min_x = float('inf')
-        # self.min_y = float('inf')
-        # self.max_x = -float('inf')
-        # self.max_y = -float('inf')
-
     def get_graph(self) -> GraphInterface:
         return self.graph
 
@@ -54,18 +51,18 @@ class GraphAlgo(GraphAlgoInterface):
         """loading graph from JSON file
             :param file_name: JSON file to read the graph from
             :return True if graph was loaded successfully, False otherwise"""
-        # if file_name.startswith(".."):
-        #     file_name = file_name[2:]
-        #     file_name = os.path.join("C:\Users\itama\PycharmProjects\OOP_2021_Ex3\\", file_name)
+
         try:
             with open(file_name, "r") as incoming:
                 data = json.load(incoming)
                 node_data = data.get("Nodes")
                 edge_data = data.get("Edges")
-                graph = DiGraph()
+                graph_load = DiGraph()
                 for node in node_data:
+                    # If no position is given, set it to None
                     if len(node) == 1:
-                        graph.add_node(node.get("id"), (None, None, None))
+                        graph_load.add_node(node.get("id"), (None, None, None))
+
                     elif len(node) == 2:
                         key = node.get("id")
                         pos = str(node.get("pos"))
@@ -73,14 +70,16 @@ class GraphAlgo(GraphAlgoInterface):
                         x = float(split_pos[0])
                         y = float(split_pos[1])
                         z = float(split_pos[2])
-                        graph.add_node(key, (x, y, z))
+                        graph_load.add_node(key, (x, y, z))
+
                     for edge in edge_data:
                         src = edge.get("src")
                         weight = edge.get("w")
                         dest = edge.get("dest")
-                        graph.add_edge(src, dest, weight)
-                        graph.add_rev_edge(dest, src, weight)
-                    self.graph = graph
+                        graph_load.add_edge(src, dest, weight)
+                        graph_load.add_rev_edge(dest, src, weight)
+
+                    self.graph = graph_load
                 return True
         except FileExistsError as e:
             print(e)
@@ -116,99 +115,143 @@ class GraphAlgo(GraphAlgoInterface):
             return False
 
     def shortest_path(self, id1: int, id2: int) -> (float, list):
-        dijkstra = self.dijkstra(id1)
-        dist = dijkstra[0]
-        pointers = dijkstra[1]
+        # Running dijkstr'a algorithm to get all weights of paths from the source node and also the parent dictionary
+        # to reconstruct the shortest path
+        dijkstraResult = self.dijkstra(id1)
+        dist = dijkstraResult[0]
+        pointers = dijkstraResult[1]
         temp = id2
-        ans = []
-        node_id2 = self.graph.nodes.get(id2)
+        path = []
+        node = self.graph.nodes.get(id2)
 
-        if node_id2.weight == (float(math.inf)):
+        if node.weight == (float(math.inf)):
             return float(math.inf), []
 
-        while temp != id1:  # inserting the nodes in the correct order
-            ans.insert(0, temp)
+        # We insert all nodes in the correct order
+        while temp != id1:
+            path.insert(0, temp)
             temp = pointers.get(temp)
 
-        ans.insert(0, id1)  # adding the first node to the list
-        return dist.get(id2), ans
+        # inserting the source node to the list and return the result
+        path.insert(0, id1)
+        return dist.get(id2), path
 
+    # Dijkstra's shortest path algorithm, we
     def dijkstra(self, src):
-        self.reset()  # resetting the values of the node's tag and weight before applying a new Dijkstra
-        dist = {}  # a dictionary of distance from src to the nodeid in the dictionary
-        prev = {}
+        # we introduce a new attribute to the nodes - weight, we will use this attribute to run Dijkstr'a algorithm
+        # the reset function sets all the weight of the nodes in the graph to positive infinity
+        self.d_prepare()
+
+        # initializing dictionaries & lists
+        distances = {}
+        parents = {}
         visited = {}
         neighbours = [(0, src)]
-        dist[src] = 0  # distance from node to itself = 0
-        prev[src] = None  # there is no pointer to the node
+
+        # a distance from the node to itself is 0
+        distances[src] = 0
+
+        # the source pointer has no "parent"
+        parents[src] = None
         visited[src] = True
-        self.get_graph().get_all_v().get(src).weight = 0
+
+        # setting the source node's weight to 0
+        self.graph.get_node(src).weight = 0
+
+        """
+        The "classic" dijkstra implementation using python's built in priority queue library Dijkstra's algorithm 
+        will initially start with infinite distances and will try to improve them step by step. Mark all nodes 
+        unvisited. Create a set of all the unvisited nodes called the unvisited set. Assign to every node a distance 
+        value: set it to zero for our initial node and to infinity for all other nodes. For the current node, 
+        consider all of its unvisited neighbors and calculate their distances through the current node. Compare the 
+        newly calculated distance to the current assigned value and assign the smaller one. When we are done 
+        considering all of the unvisited neighbors of the current node, mark the current node as visited and remove 
+        it from the unvisited set. A visited node will never be checked again. If the destination has been marked 
+        visited, we are done, otherwise, keep going. 
+        """
+
         while not len(neighbours) == 0:
-            temp = heapq.heappop(neighbours)  # temp value - int
-            for nodeid in self.graph.all_out_edges_of_node(temp[1]).keys():
-                if self.relax(temp[1], nodeid):
-                    dist[nodeid] = self.get_graph().get_all_v().get(
-                        nodeid).weight  # if we could update - updating the weight of the node int the dict
-                    prev[nodeid] = temp[1]  # temp pointing to nodeid
-                if nodeid not in visited.keys():
-                    visited[nodeid] = True  # marked as visited
+            temp = heapq.heappop(neighbours)
+            for source_id in self.graph.all_out_edges_of_node(temp[1]).keys():
+                if self.relax(temp[1], source_id):
+                    distances[source_id] = self.get_graph().get_all_v().get(source_id).weight
+                    parents[source_id] = temp[1]
+                if source_id not in visited.keys():
+                    visited[source_id] = True
                     heapq.heappush(neighbours,
-                                   (self.get_graph().get_all_v().get(nodeid).weight, nodeid))  # adding it to the queue
+                                   (self.get_graph().get_all_v().get(source_id).weight, source_id))
 
-        return dist, prev
+        return distances, parents
 
+    # helper relax function for dijkstr'a algorithm,
+    # For the edge from the vertex u to the vertex v, if d[u]+w(u,v)<d[v] is satisfied, update d[v] to d[u]+w(u,v)
     def relax(self, src: int, dest: int) -> bool:
-        srcweight = self.get_graph().get_all_v().get(src).weight
-        edgeweight = self.get_graph().all_out_edges_of_node(src).get(dest)
+        src_weight = self.get_graph().get_all_v().get(src).weight
+        destination_weight = self.get_graph().all_out_edges_of_node(src).get(dest)
 
-        if self.get_graph().get_all_v().get(dest).weight <= srcweight + edgeweight:
+        if self.graph.get_node(dest).weight <= src_weight + destination_weight:
             return False
 
-        self.get_graph().get_all_v().get(dest).weight = srcweight + edgeweight
+        self.graph.get_node(dest).weight = src_weight + destination_weight
         return True
 
-    def reset(self):
+    # preparation function, sets all node weight to infinity
+    def d_prepare(self):
         for node in self.get_graph().get_all_v().values():
             node.weight = math.inf
 
+    """
+    Augmented TSP algorithm, given a list of nodes in the graph, calculate
+    a path which visits all nodes - we can visit each node more than once and also
+    travel through other nodes in the graph which are not in the list
+    We use nearest neighbour approximation algorithm here
+    """
     def TSP(self, node_lst: List[int]) -> (List[int], float):
         if node_lst is None or len(node_lst) == 0:
             return None
 
-        nextcity = node_lst[0]  # the closest next city, starting with the first city in the list
-        path = []  # the total path
-        overAllLength = 0  # the length of the total path (weight)
-        while len(node_lst) - 1 > 0:
-            node_lst.remove(nextcity)  # removing the first city in the current list
-            minlength = math.inf
-            currpath = []  # temp path
+        nearest_neighbour = node_lst[0]
+        path = []
+        total_path_weight = 0
+
+        # We keep going as long as there's more than 1 node in our list
+        # One node is not enough to calculate TSP solution
+        while len(node_lst) > 1:
+            node_lst.remove(nearest_neighbour)
+            min_length = math.inf
+            temp_path = []
             for city in range(len(node_lst)):
-                temp = self.shortest_path(nextcity, node_lst[
-                    city])  # temp is a tuple that contains the length and list of the path
+                temp = self.shortest_path(nearest_neighbour, node_lst[city])
                 if temp[0] == math.inf:
                     break
-                if temp[0] < minlength:
-                    minlength = temp[0]
-                    currpath = temp[1]
-                    currcity = node_lst[city]
+                if temp[0] < min_length:
+                    min_length = temp[0]
+                    temp_path = temp[1]
+                    current_node = node_lst[city]
 
             if len(path) == 0:
-                path.extend(currpath)  # adding the path to the end of the list
+                path.extend(temp_path)
             else:
-                currpath.pop(0)
-                path.extend(
-                    currpath)  # adding the path to the end of the list without the first one in order to avoid duplicates
+                temp_path.pop(0)
+                path.extend(temp_path)
 
-            overAllLength = overAllLength + minlength  # adding the length of current path to the total path length
-            nextcity = currcity
+            total_path_weight = total_path_weight + min_length
+            nearest_neighbour = current_node
 
-        return path, overAllLength
+        return path, total_path_weight
 
+    """
+    This algorithm returns the center point of the graph, first we check if the graph is even strongly connected -
+    otherwise it has no center node ( We do this by running DFS twice from the same node while transposing the graph )
+    Then, we run dijkstr'a algorithm for each node to determine it's maximum distance and then return the minimum
+    value related to said node - that is the center.
+    """
     def centerPoint(self) -> (int, float):
+        # first, we make sure the graph is strongly connected
         if self.is_connected():
-            infinite = float("inf")
             min_distance = sys.float_info.max
             node_id = -1
+
             for vertex in self.get_graph().get_all_v():
                 curr_node = vertex
                 max_distance = sys.float_info.min
@@ -218,7 +261,8 @@ class GraphAlgo(GraphAlgoInterface):
                     next_node = node
                     dijkstra = self.shortest_path(curr_node, next_node)
                     tmp = dijkstra[0]
-                    if dijkstra[0] is not infinite:
+
+                    if dijkstra[0] is not float('inf'):
                         if tmp > max_distance:
                             max_distance = tmp
                         if tmp > min_distance:
@@ -232,6 +276,7 @@ class GraphAlgo(GraphAlgoInterface):
         else:
             return None, float('inf')
 
+    # A simple DFS implementation using a double-edged queue acting as a stack
     def DFS(self, v: int, b: bool):
         stack = deque()
         stack.append(self.graph.nodes.get(v))
@@ -269,10 +314,11 @@ class GraphAlgo(GraphAlgoInterface):
                 return False
         return True
 
+    """
+    All functions below this point are used to plot the graph using python's tkinter
+    """
+
     def plot_graph(self) -> None:
-        """
-        This method responsibility is to initialize the tkinter window the graph will be plotted on
-        """
 
         self.root.geometry("750x650")
         self.root.title("Graph App")
@@ -315,6 +361,14 @@ class GraphAlgo(GraphAlgoInterface):
         self.min_max_calculate()
         x_pos, y_pos = self.scaling_positions(self.min_x, self.min_y, self.max_x, self.max_y)
 
+        # adding random positions if nodes have no positions (like in T0)
+        if not bool(x_pos) and not bool(y_pos):
+            for node in self.graph.get_all_v():
+                current = self.graph.get_node(node)
+                current.setPosition([random.randrange(0, 30), random.randrange(0, 30), 0])
+            self.min_max_calculate()
+            x_pos, y_pos = self.scaling_positions(self.min_x, self.min_y, self.max_x, self.max_y)
+
         # plot nodes
         i = 0
         for curr in x_pos:
@@ -322,8 +376,8 @@ class GraphAlgo(GraphAlgoInterface):
             plt.text(x=x_pos.get(curr) - 1.5, y=y_pos.get(curr) - 3.5, s=str(i), color='black')
             i += 1
 
-        # plot edges
-        # if len(x_pos) == 0 and len(y_pos) == 0:
+            # plot edges
+            # if len(x_pos) == 0 and len(y_pos) == 0:
             for node in self.graph.get_all_v().keys():
                 all_out_edges = self.graph.all_out_edges_of_node(node)
                 x_src = x_pos.get(node)
@@ -492,8 +546,8 @@ class GraphAlgo(GraphAlgoInterface):
         final_y = y_value / calculated_y * 0.68
         return final_x, final_y
 
+
 if __name__ == '__main__':
     graph = GraphAlgo()
-    graph.load_from_json(r"C:\Users\itama\PycharmProjects\OOP_2021_Ex3\data\A0.json")
+    graph.load_from_json(r"C:\Users\yuval\PycharmProjects\OOP_2021_Ex3\data\A0.json")
     graph.plot_graph()
-
