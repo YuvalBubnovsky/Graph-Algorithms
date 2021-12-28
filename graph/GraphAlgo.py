@@ -315,9 +315,9 @@ class GraphAlgo(GraphAlgoInterface):
                              arrowprops=dict(arrowstyle="->"))
                 # TODO: plot weights
 
-                # weight = all_out_edges.get(edge)
-                # weight = '{0:.4f}'.format(weight)
-                # plt.text(x=abs(x_dest - x_src), y=max(x_dest, x_src), s=str(weight).format())
+                weight = all_out_edges.get(edge)
+                weight = '{0:.4f}'.format(weight)
+                plt.text(x=x_src * 0.7 + x_dest * 0.3, y=y_src * 0.72 + y_dest * 0.32, s=str(weight))
                 # plt.text(x=x_dest, y=y_dest, s=str(weight))
 
         plt.show()
