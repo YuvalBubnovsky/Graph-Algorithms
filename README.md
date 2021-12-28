@@ -48,7 +48,7 @@ Our workflow on this exercise has been Test-Driven Development from day one, eac
 <br> Our data structure of choice was using python's dictionaries since we believe it is the best way to represent the Node and Edge mapping we have established,
 we use one dictionary to hold all Nodes in a given graph, and 2 dictionaries for the edges - the first one holds all the regular edges and the second one holds all the edges transposed.
 <br> We were also asked to compare this assignment with our previus one - which basically the same implementation in Java, all of these comparisons can also be found
-on the relevant wiki page.
+[here](https://github.com/YuvalBubnovsky/OOP_2021_Ex3/wiki/Comparison-to-Java)
 
 ## Project Structure
 
@@ -64,6 +64,6 @@ The workspace contains three folders by default, where:
 * Graph Connectivity
 * Finding The Center Of The Graph
 * Augmented Version Of TSP (Traveling Salesmen Problem)
-<br> Analysis of these algorithm's complexity can be found the in repository's wiki
+<br> Analysis of these algorithm's complexity can be found [here](https://github.com/YuvalBubnovsky/OOP_2021_Ex3/wiki/Algorithm-Analysis)
 
 
